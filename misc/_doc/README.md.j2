@@ -58,9 +58,24 @@ Or even read environment variables from a file:
 * `template`: Jinja2 template file to render
 * `data`: (optional) path to the data used for rendering. The default is `-`: use stdin
 
-Options:
+Options and flags:
 
 * `--format, -f`: format for the data file. The default is `?`: guess from file extension.
+* `--custom-filters, -C`: Load custom Jinja2 filters and tests from `jinja2_custom` module in the current directory.
+
+    The filters and tests to be loaded must be listed in two dictionaries,
+    named  `FILTERS` and `TESTS` respectively. E.g.:
+
+```python
+   def comment(t):
+      return '# '+t
+
+   def is_odd(n):
+      return True if (n % 2) else False
+
+   FILTERS = {'comment': comment,}
+   TESTS = {'is_odd': is_odd,}
+```
 
 There is some special behavior with environment variables:
 

@@ -1,5 +1,6 @@
 import os, sys
 import argparse
+import pkgutil, importlib
 
 import jinja2
 import jinja2.loaders
@@ -32,12 +33,14 @@ class FilePathLoader(jinja2.BaseLoader):
         return contents, filename, uptodate
 
 
-def render_template(cwd, template_path, context):
+def render_template(cwd, template_path, context, custom_filters=False):
     """ Render a template
     :param template_path: Path to the template file
     :type template_path: basestring
     :param context: Template data
     :type context: dict
+    :param custom_filters: Flag to enable/disble loading of custom template filters and tests.
+    :type custom_filters: bool
     :return: Rendered template
     :rtype: basestring
     """
@@ -48,6 +51,23 @@ def render_template(cwd, template_path, context):
 
     # Register extras
     env.filters['docker_link'] = filters.docker_link
+
+    # Register customs
+    sys.path.append(os.getcwd())
+    if pkgutil.find_loader('jinja2_custom') is None:
+        # This check is used because ImportError cannot be queried
+        # to determine why it was raised. We need to distinguish
+        # between a non existing module vs a module with errors.
+        custom_filters = False
+    if custom_filters:
+        import jinja2_custom
+        if hasattr(jinja2_custom, 'FILTERS'):
+            from jinja2_custom import FILTERS as CUSTOM_FILTERS
+            env.filters.update(CUSTOM_FILTERS)
+        if hasattr(jinja2_custom, 'TESTS'):
+            from jinja2_custom import TESTS as CUSTOM_TESTS
+            env.tests.update(CUSTOM_TESTS)
+    sys.path.pop()
 
     return env \
         .get_template(template_path) \
@@ -76,6 +96,7 @@ def render_command(cwd, environ, stdin, argv):
     parser.add_argument('-v', '--version', action='version',
                         version='j2cli {}, Jinja2 {}'.format(__version__, jinja2.__version__))
 
+    parser.add_argument('-C', '--custom-filters', action='store_true', help='Attempt to load custom filters from current directory.')
     parser.add_argument('-f', '--format', default='?', help='Input data format', choices=['?'] + list(FORMATS.keys()))
     parser.add_argument('template', help='Template file to process')
     parser.add_argument('data', nargs='?', default='-', help='Input data path')
@@ -111,7 +132,8 @@ def render_command(cwd, environ, stdin, argv):
     return render_template(
         cwd,
         args.template,
-        context
+        context,
+        args.custom_filters
     )
 
 

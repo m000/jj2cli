@@ -33,20 +33,28 @@ class FilePathLoader(jinja2.BaseLoader):
         return contents, filename, uptodate
 
 
-def render_template(cwd, template_path, context, custom_filters=False):
+def render_template(cwd, template_path, context, undefined='strict', custom_filters=False):
     """ Render a template
     :param template_path: Path to the template file
     :type template_path: basestring
     :param context: Template data
     :type context: dict
+    :param undefined: How undefined variables should be rendered. Options 'strict' (default), 'normal', 'debug'.
+    :type custom_filters: basestring
     :param custom_filters: Flag to enable/disble loading of custom template filters and tests.
     :type custom_filters: bool
     :return: Rendered template
     :rtype: basestring
     """
+    undefined_opts = {
+        'strict': jinja2.StrictUndefined, # raises errors for undefined variables
+        'normal': jinja2.Undefined, # can be printed/iterated - error on other operations
+        'debug': jinja2.DebugUndefined, # return the debug info when printed
+    }
     env = jinja2.Environment(
         loader=FilePathLoader(cwd),
-        undefined=jinja2.StrictUndefined # raises errors for undefined variables
+        extensions=['jinja2.ext.with_', 'jinja2.ext.do', ],
+        undefined=undefined_opts[undefined],
     )
 
     # Register extras
@@ -98,6 +106,7 @@ def render_command(cwd, environ, stdin, argv):
 
     parser.add_argument('-C', '--custom-filters', action='store_true', help='Attempt to load custom filters from current directory.')
     parser.add_argument('-f', '--format', default='?', help='Input data format', choices=['?'] + list(FORMATS.keys()))
+    parser.add_argument('--undefined', default='strict', help='Jinja2 behaviour for undefined variables', choices=['strict', 'normal', 'debug',])
     parser.add_argument('template', help='Template file to process')
     parser.add_argument('data', nargs='?', default='-', help='Input data path')
     args = parser.parse_args(argv)
@@ -133,7 +142,8 @@ def render_command(cwd, environ, stdin, argv):
         cwd,
         args.template,
         context,
-        args.custom_filters
+        args.undefined,
+        args.custom_filters,
     )
 
 

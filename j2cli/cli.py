@@ -53,7 +53,7 @@ def render_template(cwd, template_path, context, undefined='strict', custom_filt
     }
     env = jinja2.Environment(
         loader=FilePathLoader(cwd),
-        extensions=['jinja2.ext.with_', 'jinja2.ext.do', ],
+        extensions=['jinja2.ext.with_', 'jinja2.ext.do', 'jinja2.ext.loopcontrols', ],
         undefined=undefined_opts[undefined],
     )
 

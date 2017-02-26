@@ -23,7 +23,7 @@ class FilePathLoader(jinja2.BaseLoader):
 
         # Read
         try:
-            with open(template, 'r') as f:
+            with open(template, 'rb') as f:
                 contents = f.read().decode(self.encoding)
         except IOError:
             raise jinja2.TemplateNotFound(template)
@@ -155,4 +155,5 @@ def main():
         sys.stdin,
         sys.argv[1:]
     )
+    sys.stdout = sys.stdout.detach()
     sys.stdout.write(output)

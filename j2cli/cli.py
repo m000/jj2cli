@@ -157,5 +157,9 @@ def main():
         sys.stdin,
         sys.argv[1:]
     )
-    sys.stdout = sys.stdout.detach()
+    try:
+        # python3
+        sys.stdout = sys.stdout.detach()
+    except:
+        pass
     sys.stdout.write(output)

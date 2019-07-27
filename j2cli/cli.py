@@ -106,27 +106,29 @@ def render_command(cwd, environ, stdin, argv):
     parser = argparse.ArgumentParser(
         prog='j2',
         description='Command-line interface to Jinja2 for templating in shell scripts.',
-        epilog=''
+        epilog='',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument('-v', '--version', action='version',
                         version='j2cli {0}, Jinja2 {1}'.format(__version__, jinja2.__version__))
 
-    parser.add_argument('-f', '--format', default='?', help='Input data format', choices=['?'] + list(FORMATS.keys()))
+    parser.add_argument('-f', '--format', default='?', help='Specify input data format.', choices=['?'] + list(FORMATS.keys()))
     parser.add_argument('-e', '--import-env', default=None, metavar='VAR', dest='import_env',
-                        help='Import environment variables as `var` variable. Use empty string to import into the top level')
+                        help='Import environment variables to the context as VAR. '
+                             'Specify empty string as VAR to import into the top level.')
     parser.add_argument('--filters', nargs='+', default=[], metavar='python-file', dest='filters',
-                        help='Load custom Jinja2 filters from a Python file: all top-level functions are imported.')
+                        help='Load top-level functions from the specified file(s) as Jinja2 filters.')
     parser.add_argument('--tests', nargs='+', default=[], metavar='python-file', dest='tests',
-                        help='Load custom Jinja2 tests from a Python file.')
-    parser.add_argument('--customize', default=None, metavar='python-file.py', dest='customize',
-                        help='A Python file that implements hooks to fine-tune the j2cli behavior')
+                        help='Load top-level functions from the specified file(s) as Jinja2 tests.')
+    parser.add_argument('--customize', default=None, metavar='python-file', dest='customize',
+                        help='Load custom j2cli behavior from a Python file.')
     parser.add_argument('--no-compact', action='store_true', dest='no_compact',
                         help='Do not compact space around Jinja2 blocks.')
     parser.add_argument('-U', '--undefined', action='store_true', dest='undefined',
                         help='Allow undefined variables to be used in templates (no error will be raised.)')
-    parser.add_argument('-o', metavar='outfile', dest='output_file', help="Output to a file instead of stdout")
-    parser.add_argument('template', help='Template file to process')
-    parser.add_argument('data', nargs='?', default=None, help='Input data file path; "-" to use stdin')
+    parser.add_argument('-o', metavar='outfile', dest='output_file', help="Output to a file instead of stdout.")
+    parser.add_argument('template', help='Template file to process.')
+    parser.add_argument('data', nargs='?', default=None, help='Input data file path; "-" to use stdin.')
     args = parser.parse_args(argv)
 
     # Input: guess format

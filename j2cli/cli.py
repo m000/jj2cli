@@ -122,7 +122,8 @@ def render_command(cwd, environ, stdin, argv):
                         help='A Python file that implements hooks to fine-tune the j2cli behavior')
     parser.add_argument('--no-compact', action='store_true', dest='no_compact',
                         help='Do not compact space around Jinja2 blocks.')
-    parser.add_argument('--undefined', action='store_true', dest='undefined', help='Allow undefined variables to be used in templates (no error will be raised)')
+    parser.add_argument('-U', '--undefined', action='store_true', dest='undefined',
+                        help='Allow undefined variables to be used in templates (no error will be raised.)')
     parser.add_argument('-o', metavar='outfile', dest='output_file', help="Output to a file instead of stdout")
     parser.add_argument('template', help='Template file to process')
     parser.add_argument('data', nargs='?', default=None, help='Input data file path; "-" to use stdin')

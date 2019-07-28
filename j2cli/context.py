@@ -1,9 +1,17 @@
 import six
 import os
 import sys
+import six
 import re
 import logging
 import platform
+import collections
+
+# Adjust for aliases removed in python 3.8
+try:
+    collectionsAbc = collections.abc
+except AttributeError:
+    collectionsAbc = collections
 
 #region Parsers
 
@@ -179,6 +187,24 @@ except ImportError:
 
 #endregion
 
+def dict_update_deep(d, u):
+    """ Performs a deep update of d with data from u.
+    :param d: Dictionary to be updated.
+    :type dict: dict
+    :param u: Dictionary with updates to be applied.
+    :type dict: dict
+    :return: Updated version of d.
+    :rtype: dict
+    """
+    for k, v in six.iteritems(u):
+        dv = d.get(k, {})
+        if not isinstance(dv, collectionsAbc.Mapping):
+            d[k] = v
+        elif isinstance(v, collectionsAbc.Mapping):
+            d[k] = dict_update_deep(dv, v)
+        else:
+            d[k] = v
+    return d
 
 def parse_data_spec(dspec, fallback_format='ini'):
     """ Parse a data file specification.

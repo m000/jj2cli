@@ -1,6 +1,7 @@
 import io, os, sys
 import argparse
 import logging
+from functools import reduce
 
 import jinja2
 import jinja2.loaders
@@ -8,7 +9,8 @@ from . import __version__
 
 import imp, inspect
 
-from .context import read_context_data, FORMATS
+from .context import FORMATS
+from .context import parse_data_spec, read_context_data2, dict_update_deep
 from .extras import filters
 from .extras.customize import CustomizationModule
 
@@ -96,21 +98,15 @@ class Jinja2TemplateRenderer(object):
             .encode('utf-8')
 
 
-def render_command(cwd, environ, stdin, argv):
+def render_command(argv):
     """ Pure render command
-    :param cwd: Current working directory (to search for the files)
-    :type cwd: basestring
-    :param environ: Environment variables
-    :type environ: dict
-    :param stdin: Stdin stream
-    :type stdin: file
     :param argv: Command-line arguments
     :type argv: list
     :return: Rendered template
     :rtype: basestring
     """
+    formats_names = list(FORMATS.keys())
     parser = argparse.ArgumentParser(
-        prog='j2',
         description='Command-line interface to Jinja2 for templating in shell scripts.',
         epilog='',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -119,10 +115,9 @@ def render_command(cwd, environ, stdin, argv):
                         version='j2cli {0}, Jinja2 {1}'.format(__version__, jinja2.__version__))
     parser.add_argument('-v', '--verbose', action='count', default=0,
                         help='Increase verbosity.')
-    parser.add_argument('-f', '--format', default='?', help='Specify input data format.', choices=['?'] + list(FORMATS.keys()))
-    parser.add_argument('-e', '--import-env', default=None, metavar='VAR', dest='import_env',
-                        help='Import environment variables to the context as VAR. '
-                             'Specify empty string as VAR to import into the top level.')
+    parser.add_argument('-f', '--fallback-format', default='ini', choices=formats_names,
+                        help='Specify fallback data format. '
+                             'Used for data with no specified format and no appropriate extension.')
     parser.add_argument('--filters', nargs='+', default=[], metavar='python-file', dest='filters',
                         help='Load top-level functions from the specified file(s) as Jinja2 filters.')
     parser.add_argument('--tests', nargs='+', default=[], metavar='python-file', dest='tests',
@@ -135,50 +130,18 @@ def render_command(cwd, environ, stdin, argv):
                         help='Allow undefined variables to be used in templates (no error will be raised.)')
     parser.add_argument('-o', metavar='outfile', dest='output_file', help="Output to a file instead of stdout.")
     parser.add_argument('template', help='Template file to process.')
-    parser.add_argument('data', nargs='?', default=None, help='Input data file path; "-" to use stdin.')
-    args = parser.parse_args(argv)
+    parser.add_argument('data', nargs='+', default=[],
+                        help='Input data specification. Multiple sources in different formats can be specified. '
+                        'The different sources will be squashed into a singled dict. '
+                        'The format is <source>:<context_dest>:<format>. '
+                        'Parts of the specification that are not needed can be ommitted. '
+                        'See examples at the end of the help.')
+    args = parser.parse_args(argv[1:])
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVELS[args.verbose % len(LOGLEVELS)])
     logging.debug("Parsed arguments: %s", args)
 
-    # Input: guess format
-    if args.format == '?':
-        if args.data is None or args.data == '-':
-            args.format = 'env'
-        else:
-            args.format = {
-                '.ini': 'ini',
-                '.json': 'json',
-                '.yml': 'yaml',
-                '.yaml': 'yaml',
-                '.env': 'env'
-            }[os.path.splitext(args.data)[1]]
-
-    # Input: data
-    # We always expect a file;
-    # unless the user wants 'env', and there's no input file provided.
-    if args.format == 'env':
-        # With the "env" format, if no dotenv filename is provided, we have two options:
-        # either the user wants to use the current environment, or he's feeding a dotenv file at stdin.
-        # Depending on whether we have data at stdin, we'll need to choose between the two.
-        #
-        # The problem is that in Linux, you can't reliably determine whether there is any data at stdin:
-        # some environments would open the descriptor even though they're not going to feed any data in.
-        # That's why many applications would ask you to explicitly specify a '-' when stdin should be used.
-        #
-        # And this is what we're going to do here as well.
-        # The script, however, would give the user a hint that they should use '-'
-        if args.data == '-':
-            input_data_f = stdin
-        elif args.data == None:
-            input_data_f = None
-        else:
-            input_data_f = open(args.data)
-    else:
-        input_data_f = stdin if args.data is None or args.data == '-' else open(args.data)
-
-    # Python 2: Encode environment variables as unicode
-    if sys.version_info[0] == 2 and args.format == 'env':
-        environ = dict((k.decode('utf-8'), v.decode('utf-8')) for k, v in environ.items())
+    # Parse data specifications
+    dspecs = [parse_data_spec(d, fallback_format=args.fallback_format) for d in args.data]
 
     # Customization
     if args.customize is not None:
@@ -188,18 +151,17 @@ def render_command(cwd, environ, stdin, argv):
     else:
         customize = CustomizationModule(None)
 
-    # Read data
-    context = read_context_data(
-        args.format,
-        input_data_f,
-        environ,
-        args.import_env
-    )
+    # Read data based on specs
+    data = [read_context_data2(*dspec) for dspec in dspecs]
 
+    # Squash data into a single context
+    context = reduce(dict_update_deep, data, {})
+
+    # Apply final customizations
     context = customize.alter_context(context)
 
     # Renderer
-    renderer = Jinja2TemplateRenderer(cwd, args.undefined, args.no_compact, j2_env_params=customize.j2_environment_params())
+    renderer = Jinja2TemplateRenderer(os.getcwd(), args.undefined, args.no_compact, j2_env_params=customize.j2_environment_params())
     customize.j2_environment(renderer._env)
 
     # Filters, Tests
@@ -251,12 +213,7 @@ def render_command(cwd, environ, stdin, argv):
 def main():
     """ CLI Entry point """
     try:
-        output = render_command(
-            os.getcwd(),
-            os.environ,
-            sys.stdin,
-            sys.argv[1:]
-        )
+        output = render_command(sys.argv)
     except SystemExit:
         return 1
     outstream = getattr(sys.stdout, 'buffer', sys.stdout)

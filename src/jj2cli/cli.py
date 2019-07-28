@@ -11,7 +11,7 @@ import imp, inspect
 from . import __version__
 from . import filters
 from .context import FORMATS
-from .context import parse_data_spec, read_context_data2, dict_update_deep
+from .context import parse_data_spec, read_context_data, dict_update_deep
 from .customize import CustomizationModule
 
 # available log levels, adjusted with -v at command line
@@ -152,7 +152,7 @@ def render_command(argv):
         customize = CustomizationModule(None)
 
     # Read data based on specs
-    data = [read_context_data2(*dspec) for dspec in dspecs]
+    data = [read_context_data(*dspec) for dspec in dspecs]
 
     # Squash data into a single context
     context = reduce(dict_update_deep, data, {})

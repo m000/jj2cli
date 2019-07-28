@@ -1,5 +1,9 @@
 import six
+import os
 import sys
+import re
+import logging
+import platform
 
 #region Parsers
 
@@ -139,6 +143,11 @@ FORMATS = {
     'env': _parse_env
 }
 
+FORMATS_ALIASES = dict(zip(FORMATS.keys(), FORMATS.keys()))
+FORMATS_ALIASES.update({
+    'yml': 'yaml',
+})
+
 #endregion
 
 
@@ -171,6 +180,99 @@ except ImportError:
 #endregion
 
 
+def parse_data_spec(dspec, fallback_format='ini'):
+    """ Parse a data file specification.
+    :param dspec: Data file specification in format <location>[:<ctx_dst>][:<format>].
+    :type dspec: str
+    :param fallback_format: Format to fallback to if no format is set/guessed.
+    :type fallback_format: str
+    :return: (location, ctx_dest, format)
+    :rtype: tuple
+    """
+    source = ctx_dst = fmt = None
+
+    ### set fmt ###########################################
+    # manually specified format
+    if fmt is None:
+        left, delim, right = dspec.rpartition(':')
+        if left != '' and right in FORMATS_ALIASES:
+            source = left
+            fmt = FORMATS_ALIASES[right]
+    # guess format by extension
+    if fmt is None or right == '?':
+        left, delim, right = dspec.rpartition('.')
+        if left != '' and right in FORMATS_ALIASES:
+            source = dspec
+            fmt = FORMATS_ALIASES[right]
+    # use fallback format
+    if fmt is None:
+        source = dspec
+        fmt = FORMATS_ALIASES[fallback_format]
+
+    ### set ctx_dst #######################################
+    left, delim, right = source.rpartition(':')
+    if platform.system() == 'Windows' and re.match(r'^[a-z]$', left, re.I):
+        # windows path (e.g. 'c:\foo.json') -- ignore split
+        pass
+    elif left != '' and right != '':
+        # normal case (e.g. '/data/foo.json:dst')
+        source = left
+        ctx_dst = right
+    elif left != '' and right == '':
+        # empty ctx_dst (e.g. '/data/foo:1.json:) -- used when source contains ':'
+        source = left
+    else:
+        # no ctx_dst specified
+        pass
+
+    ### return ############################################
+    return (source, ctx_dst, fmt)
+
+def read_context_data2(source, ctx_dst, fmt):
+    """ Read context data into a dictionary
+    :param source: Source file to read from.
+                   Use '-' for stdin, None to read environment (requires fmt == 'env'.)
+    :type source: str|None
+    :param ctx_dst: Variable name that will contain the loaded data in the returned dict.
+                    If None, data are loaded to the top-level of the dict.
+    :type ctx_dst: str|None
+    :param fmt: Data format of the loaded data.
+    :type fmt: str
+    :return: Dictionary with the context data.
+    :rtype: dict
+    """
+    logging.debug("Reading data: source=%s, ctx_dst=%s, fmt=%s", source, ctx_dst, fmt)
+
+    # Special case: environment variables
+    if source == '-':
+        # read data from stdin
+        data = sys.stdin.read()
+    elif source is not None:
+        # read data from file
+        with open(source, 'r') as sourcef:
+            data = sourcef.read()
+    else:
+        data = None
+
+    if data is None and fmt == env:
+        # load environment to context dict
+        if sys.version_info[0] > 2:
+            context = os.environ.copy()
+        else:
+            # python2: encode environment variables as unicode
+            context = dict((k.decode('utf-8'), v.decode('utf-8')) for k, v in os.environ.items())
+    elif data is not None:
+        # parse data to context dict
+        context = FORMATS[fmt](data)
+    else:
+        # this shouldn't have happened
+        logging.error("Can't read data in %s format from %s.", fmt, source)
+        sys.exit(1)
+
+    if ctx_dst is None:
+        return context
+    else:
+        return {ctx_dst: context}
 
 def read_context_data(format, f, environ, import_env=None):
     """ Read context data into a dictionary

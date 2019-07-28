@@ -1,5 +1,6 @@
 import io, os, sys
 import argparse
+import logging
 
 import jinja2
 import jinja2.loaders
@@ -11,6 +12,11 @@ from .context import read_context_data, FORMATS
 from .extras import filters
 from .extras.customize import CustomizationModule
 
+# available log levels, adjusted with -v at command line
+LOGLEVELS = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+
+# format to use for logging
+LOGFORMAT = '%(levelname)s: %(message)s'
 
 class FilePathLoader(jinja2.BaseLoader):
     """ Custom Jinja2 template loader which just loads a single template file """
@@ -109,9 +115,10 @@ def render_command(cwd, environ, stdin, argv):
         epilog='',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument('-v', '--version', action='version',
+    parser.add_argument('-V', '--version', action='version',
                         version='j2cli {0}, Jinja2 {1}'.format(__version__, jinja2.__version__))
-
+    parser.add_argument('-v', '--verbose', action='count', default=0,
+                        help='Increase verbosity.')
     parser.add_argument('-f', '--format', default='?', help='Specify input data format.', choices=['?'] + list(FORMATS.keys()))
     parser.add_argument('-e', '--import-env', default=None, metavar='VAR', dest='import_env',
                         help='Import environment variables to the context as VAR. '
@@ -130,6 +137,8 @@ def render_command(cwd, environ, stdin, argv):
     parser.add_argument('template', help='Template file to process.')
     parser.add_argument('data', nargs='?', default=None, help='Input data file path; "-" to use stdin.')
     args = parser.parse_args(argv)
+    logging.basicConfig(format=LOGFORMAT, level=LOGLEVELS[args.verbose % len(LOGLEVELS)])
+    logging.debug("Parsed arguments: %s", args)
 
     # Input: guess format
     if args.format == '?':

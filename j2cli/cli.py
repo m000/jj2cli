@@ -10,7 +10,7 @@ from . import __version__
 import imp, inspect
 
 from .context import FORMATS
-from .context import parse_data_spec, read_context_data2, dict_update_deep
+from .context import parse_data_spec, read_context_data, dict_update_deep
 from .extras import filters
 from .extras.customize import CustomizationModule
 
@@ -152,7 +152,7 @@ def render_command(argv):
         customize = CustomizationModule(None)
 
     # Read data based on specs
-    data = [read_context_data2(*dspec) for dspec in dspecs]
+    data = [read_context_data(*dspec) for dspec in dspecs]
 
     # Squash data into a single context
     context = reduce(dict_update_deep, data, {})

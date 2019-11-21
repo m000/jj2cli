@@ -128,7 +128,7 @@ def _parse_env(data_string):
     """
     # Parse
     if isinstance(data_string, six.string_types):
-        data = filter(
+        data = dict(filter(
             lambda l: len(l) == 2 ,
             (
                 list(map(
@@ -136,7 +136,7 @@ def _parse_env(data_string):
                     line.split('=', 1)
                 ))
                 for line in data_string.split("\n"))
-        )
+        ))
     else:
         data = data_string
 

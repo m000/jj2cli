@@ -27,6 +27,9 @@ if PYVER < (2, 7) or (3, 0) <= PYVER < (3, 5):
     packages_compat.append('jinja2 ~= 2.10.0')
 else:
     packages_compat.append('jinja2 ~= 2.11.0')
+# Misc.
+if PYVER < (3, 0):
+    packages_compat.append('shutilwhich ~= 1.1')
 
 ### Packages for optional functionality.
 packages_extra = []
@@ -63,7 +66,6 @@ setup(
             'jj2 = jj2cli:render',
         ]
     },
-
     install_requires=[
         'six >= 1.13',
         packages_compat,

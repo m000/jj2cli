@@ -1,12 +1,21 @@
-""" Custom Jinja2 filters """
+""" Additional Jinja2 filters """
 import os
-
-from jinja2 import is_undefined
+import pipes
 import re
+import sys
+from jinja2 import is_undefined
+
+if sys.version_info >= (3,0):
+    from shutil import which
+elif sys.version_info >= (2,5):
+    from shutilwhich import which
+else:
+    assert False, "Unsupported Python version: %s" % sys.version_info
 
 
 def docker_link(value, format='{addr}:{port}'):
     """ Given a Docker Link environment variable value, format it into something else.
+        XXX: The name of the filter is not very informative. This is actually a partial URI parser.
 
     This first parses a Docker Link value like this:
 
@@ -77,3 +86,16 @@ def env(varname, default=None):
     else:
         # Raise KeyError when not provided
         return os.environ[varname]
+
+
+# Filters to be loaded
+EXTRA_FILTERS = {
+    'sh_quote': pipes.quote,
+    'sh_which': which,
+    'sh_expand': lambda s: os.path.expandvars(os.path.expanduser(s)),
+    'sh_expanduser': os.path.expanduser,
+    'sh_expandvars': os.path.expandvars,
+    'docker_link': docker_link,
+    'env': env,
+}
+

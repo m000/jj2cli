@@ -167,10 +167,7 @@ def render_command(argv):
     customize.j2_environment(renderer._env)
 
     # Filters, Tests
-    renderer.register_filters({
-        'docker_link': filters.docker_link,
-        'env': filters.env,
-    })
+    renderer.register_filters(filters.EXTRA_FILTERS)
     for fname in args.filters:
         renderer.import_filters(fname)
     for fname in args.tests:

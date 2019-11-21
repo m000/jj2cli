@@ -128,6 +128,8 @@ def render_command(argv):
                         help='Do not compact space around Jinja2 blocks.')
     parser.add_argument('-U', '--undefined', action='store_true', dest='undefined',
                         help='Allow undefined variables to be used in templates (no error will be raised.)')
+    parser.add_argument('-I', '--ignore-missing', action='store_true',
+                        help='Ignore any missing data files.')
     parser.add_argument('-o', metavar='outfile', dest='output_file', help="Output to a file instead of stdout.")
     parser.add_argument('template', help='Template file to process.')
     parser.add_argument('data', nargs='+', default=[],
@@ -152,7 +154,7 @@ def render_command(argv):
         customize = CustomizationModule(None)
 
     # Read data based on specs
-    data = [read_context_data(*dspec) for dspec in dspecs]
+    data = [read_context_data(*dspec, args.ignore_missing) for dspec in dspecs]
 
     # Squash data into a single context
     context = reduce(dict_update_deep, data, {})

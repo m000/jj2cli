@@ -254,7 +254,7 @@ def parse_data_spec(dspec, fallback_format='ini'):
     ### return ############################################
     return (source, ctx_dst, fmt)
 
-def read_context_data(source, ctx_dst, fmt):
+def read_context_data(source, ctx_dst, fmt, ignore_missing=False):
     """ Read context data into a dictionary
     :param source: Source file to read from.
                    Use '-' for stdin, None to read environment (requires fmt == 'env'.)
@@ -264,6 +264,9 @@ def read_context_data(source, ctx_dst, fmt):
     :type ctx_dst: str|None
     :param fmt: Data format of the loaded data.
     :type fmt: str
+    :param ignore_missing: Flag whether missing files should be ignored and return
+                           an empty context rather than raising an error.
+    :type ignore_missing: bool|False
     :return: Dictionary with the context data.
     :rtype: dict
     """
@@ -275,8 +278,15 @@ def read_context_data(source, ctx_dst, fmt):
         data = sys.stdin.read()
     elif source is not None:
         # read data from file
-        with open(source, 'r') as sourcef:
-            data = sourcef.read()
+        try:
+            with open(source, 'r') as sourcef:
+                data = sourcef.read()
+        except FileNotFoundError as e:
+            if ignore_missing:
+                logging.warning('skipping missing input data file "%s"', source)
+                return {}
+            else:
+                raise e
     else:
         data = None
 

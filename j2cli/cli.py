@@ -20,6 +20,13 @@ LOGLEVELS = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 # format to use for logging
 LOGFORMAT = '%(levelname)s: %(message)s'
 
+# map keywords to to Jinja2 error handlers
+UNDEFINED = {
+    'strict': jinja2.StrictUndefined, # raises errors for undefined variables
+    'normal': jinja2.Undefined,       # can be printed/iterated - error on other operations
+    'debug': jinja2.DebugUndefined,   # return the debug info when printed
+}
+
 class FilePathLoader(jinja2.BaseLoader):
     """ Custom Jinja2 template loader which just loads a single template file """
 
@@ -52,10 +59,10 @@ class Jinja2TemplateRenderer(object):
         'jinja2.ext.loopcontrols',
     )
 
-    def __init__(self, cwd, allow_undefined, no_compact=False, j2_env_params={}):
+    def __init__(self, cwd, undefined='strict', no_compact=False, j2_env_params={}):
         # Custom env params
         j2_env_params.setdefault('keep_trailing_newline', True)
-        j2_env_params.setdefault('undefined', jinja2.Undefined if allow_undefined else jinja2.StrictUndefined)
+        j2_env_params.setdefault('undefined', UNDEFINED[undefined])
         j2_env_params.setdefault('trim_blocks', not no_compact)
         j2_env_params.setdefault('lstrip_blocks', not no_compact)
         j2_env_params.setdefault('extensions', self.ENABLED_EXTENSIONS)
@@ -126,11 +133,13 @@ def render_command(argv):
                         help='Load custom j2cli behavior from a Python file.')
     parser.add_argument('--no-compact', action='store_true', dest='no_compact',
                         help='Do not compact space around Jinja2 blocks.')
-    parser.add_argument('-U', '--undefined', action='store_true', dest='undefined',
-                        help='Allow undefined variables to be used in templates (no error will be raised.)')
+    parser.add_argument('-U', '--undefined', action='store', dest='undefined',
+                        choices=UNDEFINED.keys(),
+                        help='Set the Junja2 beahaviour for undefined variables.)')
     parser.add_argument('-I', '--ignore-missing', action='store_true',
                         help='Ignore any missing data files.')
-    parser.add_argument('-o', metavar='outfile', dest='output_file', help="Output to a file instead of stdout.")
+    parser.add_argument('-o', metavar='outfile', dest='output_file',
+                        help="Output to a file instead of stdout.")
     parser.add_argument('template', help='Template file to process.')
     parser.add_argument('data', nargs='+', default=[],
                         help='Input data specification. Multiple sources in different formats can be specified. '

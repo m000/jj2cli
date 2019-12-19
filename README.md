@@ -107,7 +107,8 @@ Options:
     To import environment variables into the global scope, give it an empty string: `--import-env=`.
     (This will overwrite any existing variables!)
 * `-o outfile`: Write rendered template to a file
-* `--undefined`: Allow undefined variables to be used in templates (no error will be raised)
+* `--undefined={strict, normal, debug}`: Specify the behaviour of jj2 for undefined
+    variables. Refer to [Jinja2 docs][jinja2-undefined] for details.
 * `--filters filters.py`: Load custom Jinja2 filters and tests from a Python file.
     Will load all top-level functions and register them as filters.
     This option can be used multiple times to import several files.
@@ -151,4 +152,5 @@ jj2cli is inspired by [kolypto/j2cli][j2cli] and
 [env]: https://en.wikipedia.org/wiki/Environment_variable#Unix
 [j2cli]: https://github.com/kolypto/j2cli
 [jinja2-cli]: https://github.com/mattrobenolt/jinja2-cli
+[jinja2-undefined]: https://jinja.palletsprojects.com/en/2.10.x/api/#undefined-types
 

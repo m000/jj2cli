@@ -139,7 +139,7 @@ def render_command(argv):
                         'Parts of the specification that are not needed can be ommitted. '
                         'See examples at the end of the help.')
     args = parser.parse_args(argv[1:])
-    logging.basicConfig(format=LOGFORMAT, level=LOGLEVELS[args.verbose % len(LOGLEVELS)])
+    logging.basicConfig(format=LOGFORMAT, level=LOGLEVELS[min(args.verbose, len(LOGLEVELS)-1)])
     logging.debug("Parsed arguments: %s", args)
 
     # Parse data specifications

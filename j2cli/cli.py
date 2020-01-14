@@ -133,7 +133,7 @@ def render_command(argv):
                         help='Load custom j2cli behavior from a Python file.')
     parser.add_argument('--no-compact', action='store_true', dest='no_compact',
                         help='Do not compact space around Jinja2 blocks.')
-    parser.add_argument('-U', '--undefined', action='store', dest='undefined',
+    parser.add_argument('-U', '--undefined', default='strict', dest='undefined',
                         choices=UNDEFINED.keys(),
                         help='Set the Junja2 beahaviour for undefined variables.)')
     parser.add_argument('-I', '--ignore-missing', action='store_true',

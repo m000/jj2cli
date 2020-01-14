@@ -23,6 +23,10 @@ pyyaml_version = 'pyyaml >= 3.10'  # fresh
 if sys.version_info[:2] == (2, 6):
     pyyaml_version = 'pyyaml<=3.11'
 
+# Extra packages for compatibility across Python versions.
+packages_compat = []
+if sys.version_info < (3,0):
+    packages_compat.append('shutilwhich>=1.1')
 
 setup(
     name='j2cli',
@@ -44,10 +48,10 @@ setup(
             'j2 = j2cli:main',
         ]
     },
-
     install_requires=[
         'jinja2 >= 2.7.2',
         'six >= 1.10',
+        packages_compat,
     ],
     extras_require={
         'yaml': [pyyaml_version,]

@@ -1,6 +1,5 @@
 """ Additional Jinja2 filters """
 import os
-import pipes
 import re
 import sys
 from jinja2 import is_undefined
@@ -12,6 +11,12 @@ elif sys.version_info >= (2,5):
 else:
     assert False, "Unsupported Python version: %s" % sys.version_info
 
+if sys.version_info >= (3,3):
+    from shlex import quote as sh_quote
+elif sys.version_info >= (2,7):
+    from pipes import quote as sh_quote
+else:
+    assert False, "Unsupported Python version: %s" % sys.version_info
 
 def docker_link(value, format='{addr}:{port}'):
     """ Given a Docker Link environment variable value, format it into something else.
@@ -90,7 +95,7 @@ def env(varname, default=None):
 
 # Filters to be loaded
 EXTRA_FILTERS = {
-    'sh_quote': pipes.quote,
+    'sh_quote': sh_quote,
     'sh_which': which,
     'sh_expand': lambda s: os.path.expandvars(os.path.expanduser(s)),
     'sh_expanduser': os.path.expanduser,

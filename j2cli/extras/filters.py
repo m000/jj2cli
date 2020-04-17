@@ -92,6 +92,27 @@ def env(varname, default=None):
         # Raise KeyError when not provided
         return os.environ[varname]
 
+def align_suffix(text, delim, column=None, spaces_after_delim=1):
+    """ Align the suffixes of lines in text, starting from the specified delim.
+    """
+    s=''
+
+    if column is None or column == 'auto':
+        column = max(map(lambda l: l.find(delim), text.splitlines()))
+    elif column == 'previous':
+        column = align_suffix.column_previous
+
+    for l in map(lambda s: s.split(delim, 1), text.splitlines()):
+        if len(l) < 2:
+            s += l[0].rstrip() + os.linesep
+        else:
+            s += l[0].rstrip().ljust(column) + delim + spaces_after_delim*' ' + l[1].strip() + os.linesep
+
+    align_suffix.column_previous = column
+    return s
+
+align_suffix.column_previous = None
+
 
 # Filters to be loaded
 EXTRA_FILTERS = {
@@ -105,5 +126,6 @@ EXTRA_FILTERS = {
     'yesno': lambda t: 'yes' if t else 'no',
     'docker_link': docker_link,
     'env': env,
+    'align_suffix': align_suffix,
 }
 

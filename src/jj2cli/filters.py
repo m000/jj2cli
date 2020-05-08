@@ -2,7 +2,7 @@
 import os
 import re
 import sys
-from jinja2 import is_undefined
+from jinja2 import is_undefined, contextfilter
 
 if sys.version_info >= (3,0):
     from shutil import which
@@ -119,6 +119,18 @@ def align_suffix(text, delim, column=None, spaces_after_delim=1):
 align_suffix.column_previous = None
 
 
+@contextfilter
+def ctxlookup(context, key):
+    """ Lookup the value of a key in the template context.
+    """
+    v = context
+    try:
+        for k in key.split('.'):
+            v = v[k]
+        return v
+    except KeyError:
+        return context.environment.undefined(name=key)
+
 # Filters to be loaded
 EXTRA_FILTERS = {
     'sh_quote': sh_quote,
@@ -132,5 +144,6 @@ EXTRA_FILTERS = {
     'docker_link': docker_link,
     'env': env,
     'align_suffix': align_suffix,
+    'ctxlookup': ctxlookup,
 }
 

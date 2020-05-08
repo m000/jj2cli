@@ -3,6 +3,7 @@ import os
 import re
 import sys
 from jinja2 import is_undefined, contextfilter
+from jinja2.exceptions import UndefinedError
 
 if sys.version_info >= (3,0):
     from shutil import which
@@ -104,8 +105,13 @@ def align_suffix(text, delim, column=None, spaces_after_delim=1):
 
     for l in map(lambda s: s.split(delim, 1), text.splitlines()):
         if len(l) < 2:
+            # no delimiter occurs
             s += l[0].rstrip() + os.linesep
+        elif l[0].strip() == '':
+            # no content before delimiter - leave as-is
+            s += l[0] + delim + l[1] + os.linesep
         else:
+            # align
             s += l[0].rstrip().ljust(column) + delim + spaces_after_delim*' ' + l[1].strip() + os.linesep
 
     align_suffix.column_previous = column

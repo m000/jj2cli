@@ -139,6 +139,7 @@ EXTRA_FILTERS = {
     'sh_expand': lambda s: os.path.expandvars(os.path.expanduser(s)),
     'sh_expanduser': os.path.expanduser,
     'sh_expandvars': os.path.expandvars,
+    'sh_realpath': os.path.realpath,
     'ifelse': lambda t, truev, falsev: truev if t else falsev,
     'onoff': lambda t: 'on' if t else 'off',
     'yesno': lambda t: 'yes' if t else 'no',

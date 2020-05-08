@@ -132,6 +132,20 @@ def ctxlookup(context, key):
     except KeyError:
         return context.environment.undefined(name=key)
 
+def sh_opt(text, name, delim=" ", quote=False):
+    """ Format text as a command line option.
+    """
+    if not text:
+        return ''
+    if quote:
+        text = sh_quote(text)
+    return '%s%s%s' % (name, delim, text)
+
+def sh_optq(text, name, delim=" "):
+    """ Quote text and format as a command line option.
+    """
+    return sh_opt(text, name, delim, quote=True)
+
 # Filters to be loaded
 EXTRA_FILTERS = {
     'sh_quote': sh_quote,
@@ -140,6 +154,8 @@ EXTRA_FILTERS = {
     'sh_expanduser': os.path.expanduser,
     'sh_expandvars': os.path.expandvars,
     'sh_realpath': os.path.realpath,
+    'sh_opt': sh_opt,
+    'sh_optq': sh_optq,
     'ifelse': lambda t, truev, falsev: truev if t else falsev,
     'onoff': lambda t: 'on' if t else 'off',
     'yesno': lambda t: 'yes' if t else 'no',

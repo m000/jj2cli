@@ -112,41 +112,56 @@ def render_command(argv):
     :return: Rendered template
     :rtype: basestring
     """
+    version_info = (__version__, jinja2.__version__)
     formats_names = list(FORMATS.keys())
     parser = argparse.ArgumentParser(
         description='Renders Jinja2 templates from the command line.',
         epilog='',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+    p_input = parser.add_argument_group('input options')
+    p_output = parser.add_argument_group('output options')
+    p_custom = parser.add_argument_group('customization options')
+
+    ### optional arguments ##########################################
     parser.add_argument('-V', '--version', action='version',
-                        version='jj2cli {0}, Jinja2 {1}'.format(__version__, jinja2.__version__))
+            version='jj2cli {0}, Jinja2 {1}'.format(*version_info))
     parser.add_argument('-v', '--verbose', action='count', default=0,
-                        help='Increase verbosity.')
-    parser.add_argument('-f', '--fallback-format', default='ini', choices=formats_names,
-                        help='Specify fallback data format. '
-                             'Used for data with no specified format and no appropriate extension.')
-    parser.add_argument('--filters', nargs='+', default=[], metavar='python-file', dest='filters',
-                        help='Load top-level functions from the specified file(s) as Jinja2 filters.')
-    parser.add_argument('--tests', nargs='+', default=[], metavar='python-file', dest='tests',
-                        help='Load top-level functions from the specified file(s) as Jinja2 tests.')
-    parser.add_argument('--customize', default=None, metavar='python-file', dest='customize',
-                        help='Load custom jj2cli behavior from a Python file.')
-    parser.add_argument('--no-compact', action='store_true', dest='no_compact',
-                        help='Do not compact space around Jinja2 blocks.')
-    parser.add_argument('-U', '--undefined', default='strict', dest='undefined',
-                        choices=UNDEFINED.keys(),
-                        help='Set the Junja2 beahaviour for undefined variables.)')
-    parser.add_argument('-I', '--ignore-missing', action='store_true',
-                        help='Ignore any missing data files.')
-    parser.add_argument('-o', metavar='outfile', dest='output_file',
-                        help="Output to a file instead of stdout.")
-    parser.add_argument('template', help='Template file to process.')
-    parser.add_argument('data', nargs='+', default=[],
-                        help='Input data specification. Multiple sources in different formats can be specified. '
-                        'The different sources will be squashed into a singled dict. '
-                        'The format is <source>:<context_dest>:<format>. '
-                        'Parts of the specification that are not needed can be ommitted. '
-                        'See examples at the end of the help.')
+            help='Increase verbosity.')
+    ### input options ###############################################
+    p_input.add_argument('template', help='Template file to process.')
+    p_input.add_argument('data', nargs='+', default=[],
+            help='Input data specification. '
+            'Multiple sources in different formats can be specified. '
+            'The different sources will be squashed into a singled dict. '
+            'The format is <source>:<context_dest>:<format>. '
+            'Parts of the specification that are not needed can be ommitted. '
+            'See examples at the end of the help.')
+    p_input.add_argument('-U', '--undefined', default='strict',
+            dest='undefined', choices=UNDEFINED.keys(),
+            help='Set the Jinja2 beahaviour for undefined variables.)')
+    p_input.add_argument('-I', '--ignore-missing', action='store_true',
+            help='Ignore any missing data files.')
+    p_input.add_argument('-f', '--fallback-format',
+            default='ini', choices=formats_names,
+            help='Specify fallback data format. '
+            'Used for data with no specified format and no appropriate extension.')
+    ### output options ##############################################
+    p_output.add_argument('-o', metavar='outfile', dest='output_file',
+            help="Output to a file instead of stdout.")
+    p_output.add_argument('--no-compact', action='store_true', dest='no_compact',
+            help='Do not compact space around Jinja2 blocks.')
+    ### customization ###############################################
+    p_custom.add_argument('--filters', nargs='+', default=[],
+            metavar='python-file', dest='filters',
+            help='Load the top-level functions from the specified file(s) as Jinja2 filters.')
+    p_custom.add_argument('--tests', nargs='+', default=[],
+            metavar='python-file', dest='tests',
+            help='Load the top-level functions from the specified file(s) as Jinja2 tests.')
+    p_custom.add_argument('--customize', default=None,
+            metavar='python-file', dest='customize',
+            help='Load custom jj2cli behavior from a Python file.')
+
     args = parser.parse_args(argv[1:])
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVELS[min(args.verbose, len(LOGLEVELS)-1)])
     logging.debug("Parsed arguments: %s", args)

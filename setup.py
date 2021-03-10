@@ -65,6 +65,7 @@ setup(
         'console_scripts': [
             'j2 = jj2cli:render',  # temporarily keep the old entry point
             'jj2 = jj2cli:render',
+            'jj2dep = jj2cli:dependencies',
         ]
     },
     install_requires=[

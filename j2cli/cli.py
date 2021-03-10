@@ -4,6 +4,7 @@ import logging
 from functools import reduce
 
 import jinja2
+import jinja2.meta
 import jinja2.loaders
 from . import __version__
 
@@ -232,12 +233,31 @@ def render_command(argv):
     return result
 
 
-
-def main():
-    """ CLI Entry point """
+def render():
+    """ CLI entry point for rendering templates. """
     try:
         output = render_command(sys.argv)
     except SystemExit:
         return 1
     outstream = getattr(sys.stdout, 'buffer', sys.stdout)
     outstream.write(output)
+
+
+def dependencies():
+    """ CLI entry point for analyzing template dependencies. """
+    version_info = (__version__, jinja2.__version__)
+    parser = argparse.ArgumentParser(
+        description='Analyze Jinja2 templates for dependencies.',
+        epilog='',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument('templates', metavar='TEMPLATE', nargs='+',
+            type=argparse.FileType('r', encoding='utf-8'))
+    args = parser.parse_args()
+
+    env = jinja2.Environment(extensions=Jinja2TemplateRenderer.ENABLED_EXTENSIONS)
+    for tpl in args.templates:
+            ast = env.parse(tpl.read())
+            print(tpl)
+            print(list(jinja2.meta.find_referenced_templates(ast)))
+            # note recursive!

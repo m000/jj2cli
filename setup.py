@@ -46,7 +46,8 @@ setup(
     scripts=[],
     entry_points={
         'console_scripts': [
-            'j2 = j2cli:main',
+            'j2 = j2cli:render',
+            'j2dep = j2cli:dependencies',
         ]
     },
     install_requires=[

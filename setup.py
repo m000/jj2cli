@@ -12,6 +12,7 @@ Features:
 * Allows the use of environment variables in templates! Hello [Docker](http://www.docker.com/) :)
 
 Inspired by [mattrobenolt/jinja2-cli](https://github.com/mattrobenolt/jinja2-cli)
+and [kolypto/j2cli](https://github.com/kolypto/j2cli).
 """
 
 from setuptools import setup, find_packages
@@ -30,13 +31,13 @@ if sys.version_info < (3,0):
 
 setup(
     name='j2cli',
-    version='0.3.12b',
-    author='Mark Vartanyan',
-    author_email='kolypto@gmail.com',
+    version='0.4.0',
+    author='Manolis Stamatogiannakis',
+    author_email='mstamat@gmail.com',
 
-    url='https://github.com/kolypto/j2cli',
+    url='https://github.com/m000/j2cli',
     license='BSD',
-    description='Command-line interface to Jinja2 for templating in shell scripts.',
+    description='Jinja2 command-line tool.',
     long_description=__doc__,  # can't do open('README.md').read() because we're describing self
     long_description_content_type='text/markdown',
     keywords=['Jinja2', 'templating', 'command-line', 'CLI'],

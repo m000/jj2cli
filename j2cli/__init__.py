@@ -3,8 +3,8 @@
 """ j2cli main file """
 import pkg_resources
 
-__author__ = "Mark Vartanyan"
-__email__ = "kolypto@gmail.com"
+__author__  = "Manolis Stamatogiannakis"
+__email__   = "mstamat@gmail.com"
 __version__ = pkg_resources.get_distribution('j2cli').version
 
 from j2cli.cli import main

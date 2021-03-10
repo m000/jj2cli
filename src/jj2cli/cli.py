@@ -5,14 +5,14 @@ from functools import reduce
 
 import jinja2
 import jinja2.loaders
-from . import __version__
 
 import imp, inspect
 
+from . import __version__
+from . import filters
 from .context import FORMATS
 from .context import parse_data_spec, read_context_data2, dict_update_deep
-from .extras import filters
-from .extras.customize import CustomizationModule
+from .customize import CustomizationModule
 
 # available log levels, adjusted with -v at command line
 LOGLEVELS = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
@@ -107,12 +107,12 @@ def render_command(argv):
     """
     formats_names = list(FORMATS.keys())
     parser = argparse.ArgumentParser(
-        description='Command-line interface to Jinja2 for templating in shell scripts.',
+        description='Renders Jinja2 templates from the command line.',
         epilog='',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     parser.add_argument('-V', '--version', action='version',
-                        version='j2cli {0}, Jinja2 {1}'.format(__version__, jinja2.__version__))
+                        version='jj2cli {0}, Jinja2 {1}'.format(__version__, jinja2.__version__))
     parser.add_argument('-v', '--verbose', action='count', default=0,
                         help='Increase verbosity.')
     parser.add_argument('-f', '--fallback-format', default='ini', choices=formats_names,
@@ -123,7 +123,7 @@ def render_command(argv):
     parser.add_argument('--tests', nargs='+', default=[], metavar='python-file', dest='tests',
                         help='Load top-level functions from the specified file(s) as Jinja2 tests.')
     parser.add_argument('--customize', default=None, metavar='python-file', dest='customize',
-                        help='Load custom j2cli behavior from a Python file.')
+                        help='Load custom jj2cli behavior from a Python file.')
     parser.add_argument('--no-compact', action='store_true', dest='no_compact',
                         help='Do not compact space around Jinja2 blocks.')
     parser.add_argument('-U', '--undefined', action='store_true', dest='undefined',

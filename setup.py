@@ -30,6 +30,7 @@ else:
 # Misc.
 if PYVER < (3, 0):
     packages_compat.append('shutilwhich ~= 1.1')
+    packages_compat.append('pathlib ~= 1.0')
 
 ### Packages for optional functionality.
 packages_extra = []

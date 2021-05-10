@@ -134,8 +134,8 @@ def render_command(argv):
             help='Input data specification. '
             'Multiple sources in different formats can be specified. '
             'The different sources will be squashed into a singled dict. '
-            'The format is <source>:<context_dest>:<format>. '
-            'Parts of the specification that are not needed can be ommitted. '
+            'The format is <source>[:<format>[:<context_dest>]]. '
+            'Parts of the specification may be left empty. '
             'See examples at the end of the help.')
     p_input.add_argument('-U', '--undefined', default='strict',
             dest='undefined', choices=UNDEFINED.keys(),

@@ -37,7 +37,7 @@ def j2_environment(env):
     :rtype: jinja2.environment.Environment
     """
     env.globals.update(
-        my_function=lambda v: 'my function says "{}"'.format(v)
+        my_function='my function says "{}"'.format
     )
     return env
 
@@ -67,7 +67,7 @@ def extra_tests():
     """
     return dict(
         # Example: {% if a|int is custom_odd %}odd{% endif %}
-        custom_odd=lambda n: True if (n % 2) else False
+        custom_odd=lambda n: bool(n % 2)
     )
 
 # {% endraw %}

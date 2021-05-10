@@ -22,6 +22,7 @@ class FilePathLoader(jinja2.BaseLoader):
     def get_source(self, environment, template):
         # Path
         filename = os.path.join(self.cwd, template)
+        logging.debug("TEMPLATE_PATH %s", filename)
 
         # Read
         try:
@@ -35,7 +36,7 @@ class FilePathLoader(jinja2.BaseLoader):
         return contents, filename, uptodate
 
 
-class Jinja2TemplateRenderer(object):
+class Jinja2TemplateRenderer:
     """ Template renderer """
 
     UNDEFINED = {
@@ -44,8 +45,9 @@ class Jinja2TemplateRenderer(object):
         'debug': jinja2.DebugUndefined,   # return the debug info when printed
     }
 
-    def __init__(self, cwd, undefined='strict', no_compact=False, j2_env_params={}):
+    def __init__(self, cwd, undefined='strict', no_compact=False, j2_env_params=None):
         # Custom env params
+        j2_env_params = j2_env_params if j2_env_params is not None else {}
         j2_env_params.setdefault('keep_trailing_newline', True)
         j2_env_params.setdefault('undefined', self.UNDEFINED[undefined])
         j2_env_params.setdefault('trim_blocks', not no_compact)

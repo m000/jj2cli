@@ -101,7 +101,7 @@ def render_command(argv):
 
     # Renderer
     renderer = Jinja2TemplateRenderer(os.getcwd(), args.undefined, args.no_compact, j2_env_params=customize.j2_environment_params())
-    customize.j2_environment(renderer._env)
+    customize.j2_environment(renderer._env) # pylint: disable=protected-access
 
     # Filters, Tests
     renderer.register_filters(filters.EXTRA_FILTERS)
@@ -133,6 +133,7 @@ def render():
         return 1
     outstream = getattr(sys.stdout, 'buffer', sys.stdout)
     outstream.write(output)
+    return 0
 
 
 def dependencies():

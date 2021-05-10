@@ -127,8 +127,7 @@ class InputData:
         if isinstance(self._iostr, FileNotFoundError):
             if ignore_missing is True:
                 return {}
-            else:
-                raise self._iostr
+            raise self._iostr
         return getattr(self, '_parse_%s' % fmt)()
 
     def _parse_ENV(self):

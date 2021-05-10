@@ -1,7 +1,6 @@
 import six
 import os
 import sys
-import six
 import re
 import logging
 import platform
@@ -10,9 +9,9 @@ from pathlib import Path
 
 # Adjust for aliases removed in python 3.8
 try:
-    collectionsAbc = collections.abc
+    CollectionsAbc = collections.abc
 except AttributeError:
-    collectionsAbc = collections
+    CollectionsAbc = collections
 
 #region Parsers
 
@@ -33,8 +32,6 @@ def _parse_ini(data_string):
         $ j2 config.j2 data.ini
         $ cat data.ini | j2 --format=ini config.j2
     """
-    from io import StringIO
-
     # Override
     class MyConfigParser(ConfigParser.ConfigParser):
         def as_dict(self):
@@ -170,7 +167,7 @@ except ImportError:
     try:
         import json
     except ImportError:
-         del FORMATS['json']
+        del FORMATS['json']
 
 # INI: Python 2 | Python 3
 try:
@@ -199,9 +196,9 @@ def dict_update_deep(d, u):
     """
     for k, v in six.iteritems(u):
         dv = d.get(k, {})
-        if not isinstance(dv, collectionsAbc.Mapping):
+        if not isinstance(dv, CollectionsAbc.Mapping):
             d[k] = v
-        elif isinstance(v, collectionsAbc.Mapping):
+        elif isinstance(v, CollectionsAbc.Mapping):
             d[k] = dict_update_deep(dv, v)
         else:
             d[k] = v
@@ -280,12 +277,11 @@ def read_context_data(source, fmt, ctx_dst, ignore_missing=False):
             if ignore_missing:
                 logging.warning('skipping missing input data file "%s"', source)
                 return {}
-            else:
-                raise e
+            raise e
     else:
         data = None
 
-    if data is None and fmt == env:
+    if data is None and fmt == 'env':
         # load environment to context dict
         if sys.version_info[0] > 2:
             context = os.environ.copy()
@@ -300,8 +296,7 @@ def read_context_data(source, fmt, ctx_dst, ignore_missing=False):
         logging.error("Can't read data in %s format from %s.", fmt, source)
         sys.exit(1)
 
-    if ctx_dst is None:
-        return context
-    else:
+    if ctx_dst is not None:
         return {ctx_dst: context}
 
+    return context

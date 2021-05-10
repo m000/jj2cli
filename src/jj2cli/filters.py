@@ -5,9 +5,9 @@ import sys
 from jinja2 import is_undefined, contextfilter
 
 if sys.version_info >= (3,0):
-    from shutil import which
+    from shutil import which      # pylint: disable=import-error
 elif sys.version_info >= (2,5):
-    from shutilwhich import which
+    from shutilwhich import which # pylint: disable=import-error
 else:
     assert False, "Unsupported Python version: %s" % sys.version_info
 
@@ -18,7 +18,7 @@ elif sys.version_info >= (2,7):
 else:
     assert False, "Unsupported Python version: %s" % sys.version_info
 
-def docker_link(value, format='{addr}:{port}'):
+def docker_link(value, fmt='{addr}:{port}'):
     """ Given a Docker Link environment variable value, format it into something else.
         XXX: The name of the filter is not very informative. This is actually a partial URI parser.
 
@@ -36,12 +36,12 @@ def docker_link(value, format='{addr}:{port}'):
     }
     ```
 
-    And then uses `format` to format it, where the default format is '{addr}:{port}'.
+    And then uses `fmt` to format it, where the default format is '{addr}:{port}'.
 
     More info here: [Docker Links](https://docs.docker.com/userguide/dockerlinks/)
 
     :param value: Docker link (from an environment variable)
-    :param format: The format to apply. Supported placeholders: `{proto}`, `{addr}`, `{port}`
+    :param fmt: The format to apply. Supported placeholders: `{proto}`, `{addr}`, `{port}`
     :return: Formatted string
     """
     # pass undefined values on down the pipeline
@@ -55,7 +55,7 @@ def docker_link(value, format='{addr}:{port}'):
     d = m.groupdict()
 
     # Format
-    return format.format(**d)
+    return fmt.format(**d)
 
 
 def env(varname, default=None):
@@ -85,36 +85,40 @@ def env(varname, default=None):
 
         Notice that there must be quotes around the environment variable name
     """
-    if default is not None:
-        # With the default, there's never an error
-        return os.getenv(varname, default)
-    else:
+    if default is None:
         # Raise KeyError when not provided
         return os.environ[varname]
 
+    # With the default, there's never an error
+    return os.getenv(varname, default)
+
+
 def align_suffix(text, delim, column=None, spaces_after_delim=1):
     """ Align the suffixes of lines in text, starting from the specified delim.
+
+        Example: XXX
     """
     s=''
 
     if column is None or column == 'auto':
-        column = max(map(lambda l: l.find(delim), text.splitlines()))
+        column = max(map(lambda ln: ln.find(delim), text.splitlines()))
     elif column == 'previous':
         column = align_suffix.column_previous
 
-    for l in map(lambda s: s.split(delim, 1), text.splitlines()):
-        if len(l) < 2:
+    for ln in map(lambda s: s.split(delim, 1), text.splitlines()):
+        if len(ln) < 2:
             # no delimiter occurs
-            s += l[0].rstrip() + os.linesep
-        elif l[0].strip() == '':
+            s += ln[0].rstrip() + os.linesep
+        elif ln[0].strip() == '':
             # no content before delimiter - leave as-is
-            s += l[0] + delim + l[1] + os.linesep
+            s += ln[0] + delim + ln[1] + os.linesep
         else:
             # align
-            s += l[0].rstrip().ljust(column) + delim + spaces_after_delim*' ' + l[1].strip() + os.linesep
+            s += ln[0].rstrip().ljust(column) + delim + spaces_after_delim*' ' + ln[1].strip() + os.linesep
 
     align_suffix.column_previous = column
     return s
+
 
 align_suffix.column_previous = None
 
@@ -140,10 +144,12 @@ def sh_opt(text, name, delim=" ", quote=False):
         text = sh_quote(text)
     return '%s%s%s' % (name, delim, text)
 
+
 def sh_optq(text, name, delim=" "):
     """ Quote text and format as a command line option.
     """
     return sh_opt(text, name, delim, quote=True)
+
 
 # Filters to be loaded
 EXTRA_FILTERS = {
@@ -163,4 +169,3 @@ EXTRA_FILTERS = {
     'align_suffix': align_suffix,
     'ctxlookup': ctxlookup,
 }
-

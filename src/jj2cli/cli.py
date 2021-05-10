@@ -1,4 +1,6 @@
-import io, os, sys
+import io
+import os
+import sys
 import argparse
 import logging
 from functools import reduce
@@ -7,7 +9,8 @@ import jinja2
 import jinja2.meta
 import jinja2.loaders
 
-import imp, inspect
+import imp
+import inspect
 
 from . import __version__
 from . import filters
@@ -51,7 +54,7 @@ class FilePathLoader(jinja2.BaseLoader):
         return contents, filename, uptodate
 
 
-class Jinja2TemplateRenderer(object):
+class Jinja2TemplateRenderer:
     """ Template renderer """
 
     ENABLED_EXTENSIONS=(
@@ -60,8 +63,9 @@ class Jinja2TemplateRenderer(object):
         'jinja2.ext.loopcontrols',
     )
 
-    def __init__(self, cwd, undefined='strict', no_compact=False, j2_env_params={}):
+    def __init__(self, cwd, undefined='strict', no_compact=False, j2_env_params=None):
         # Custom env params
+        j2_env_params = j2_env_params if j2_env_params is not None else {}
         j2_env_params.setdefault('keep_trailing_newline', True)
         j2_env_params.setdefault('undefined', UNDEFINED[undefined])
         j2_env_params.setdefault('trim_blocks', not no_compact)
@@ -208,14 +212,14 @@ def render_command(argv):
         # When there's data at stdin, tell the user they should use '-'
         try:
             stdin_has_data = stdin is not None and not stdin.isatty()
-            if args.format == 'env' and args.data == None and stdin_has_data:
+            if args.format == 'env' and args.data is None and stdin_has_data:
                 extra_info = (
                     "\n\n"
                     "If you're trying to pipe a .env file, please run me with a '-' as the data file name:\n"
                     "$ {cmd} {argv} -".format(cmd=os.path.basename(sys.argv[0]), argv=' '.join(sys.argv[1:]))
                 )
                 e.args = (e.args[0] + extra_info,) + e.args[1:]
-        except:
+        except Exception:
             # The above code is so optional that any, ANY, error, is ignored
             pass
 
@@ -241,6 +245,7 @@ def render():
         return 1
     outstream = getattr(sys.stdout, 'buffer', sys.stdout)
     outstream.write(output)
+    return 0
 
 
 def dependencies():

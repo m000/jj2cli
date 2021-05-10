@@ -1,13 +1,9 @@
 
-class CustomizationModule(object):
+class CustomizationModule:
     """ The interface for customization functions, defined as module-level functions """
 
     def __init__(self, module=None):
         if module is not None:
-            def howcall(*args):
-                print(args)
-                exit(1)
-
             # Import every module function as a method on ourselves
             for name in self._IMPORTED_METHOD_NAMES:
                 try:

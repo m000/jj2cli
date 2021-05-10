@@ -1,0 +1,11 @@
+strictness: medium
+test-warnings: true
+
+ignore-paths:
+    - pyenv
+    - misc
+    - docs
+
+pylint:
+    disable:
+        - cyclic-import # doesn't seem to work properly

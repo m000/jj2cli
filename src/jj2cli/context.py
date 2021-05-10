@@ -6,6 +6,7 @@ import re
 import logging
 import platform
 import collections
+from pathlib import Path
 
 # Adjust for aliases removed in python 3.8
 try:
@@ -208,53 +209,47 @@ def dict_update_deep(d, u):
 
 def parse_data_spec(dspec, fallback_format='ini'):
     """ Parse a data file specification.
-    :param dspec: Data file specification in format <location>[:<ctx_dst>][:<format>].
+    :param dspec: Data file specification in format <path>[:<format>[:ctx_dst]].
     :type dspec: str
     :param fallback_format: Format to fallback to if no format is set/guessed.
     :type fallback_format: str
-    :return: (location, ctx_dest, format)
+    :return: (path, format, ctx_dst)
     :rtype: tuple
     """
-    source = ctx_dst = fmt = None
+    MAX_DSPEC_COMPONENTS = 3
+    DSPEC_SEP = ':'
 
-    ### set fmt ###########################################
-    # manually specified format
-    if fmt is None:
-        left, delim, right = dspec.rpartition(':')
-        if left != '' and right in FORMATS_ALIASES:
-            source = left
-            fmt = FORMATS_ALIASES[right]
-    # guess format by extension
-    if fmt is None or right == '?':
-        left, delim, right = dspec.rpartition('.')
-        if left != '' and right in FORMATS_ALIASES:
-            source = dspec
-            fmt = FORMATS_ALIASES[right]
-    # use fallback format
-    if fmt is None:
-        source = dspec
-        fmt = FORMATS_ALIASES[fallback_format]
-
-    ### set ctx_dst #######################################
-    left, delim, right = source.rpartition(':')
-    if platform.system() == 'Windows' and re.match(r'^[a-z]$', left, re.I):
-        # windows path (e.g. 'c:\foo.json') -- ignore split
-        pass
-    elif left != '' and right != '':
-        # normal case (e.g. '/data/foo.json:dst')
-        source = left
-        ctx_dst = right
-    elif left != '' and right == '':
-        # empty ctx_dst (e.g. '/data/foo:1.json:) -- used when source contains ':'
-        source = left
+    # detect windows-style paths
+    # NB: In Windows filenames matching [a-z] require a directory prefix.
+    if DSPEC_SEP == ':' and platform.system() == 'Windows':
+        m = re.match(r'^[a-z]:[^:]+', dspec, re.I)
     else:
-        # no ctx_dst specified
-        pass
+        m = None
 
-    ### return ############################################
-    return (source, ctx_dst, fmt)
+    # parse supplied components
+    if m is None:
+        dspec = dspec.rsplit(DSPEC_SEP, MAX_DSPEC_COMPONENTS-1)
+    else:
+        dspec = dspec[m.span()[1] + 1:]
+        dspec = [m.group(0)] + dspec.rsplit(DSPEC_SEP, MAX_DSPEC_COMPONENTS-2)
 
-def read_context_data(source, ctx_dst, fmt, ignore_missing=False):
+    # pad missing components
+    dspec += (MAX_DSPEC_COMPONENTS - len(dspec))*[None]
+
+    # post-process parsed components
+    path, fmt, ctx_dst = dspec
+    path = Path(path) if path not in ['', '-'] else None
+    if fmt in FORMATS_ALIASES:
+        fmt = FORMATS_ALIASES[fmt]
+    elif fmt in ['', '?', None] and path.suffix[1:] in FORMATS_ALIASES:
+        fmt = FORMATS_ALIASES[path.suffix[1:]]
+    else:
+        fmt = FORMATS_ALIASES[fallback_format]
+    ctx_dst = None if ctx_dst in ['', None] else None
+
+    return (path, fmt, ctx_dst)
+
+def read_context_data(source, fmt, ctx_dst, ignore_missing=False):
     """ Read context data into a dictionary
     :param source: Source file to read from.
                    Use '-' for stdin, None to read environment (requires fmt == 'env'.)

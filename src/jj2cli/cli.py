@@ -1,18 +1,16 @@
 import argparse
-import imp
 import io
 import logging
 import os
 import sys
+from functools import reduce
+from importlib.machinery import SourceFileLoader
+
 import jinja2
 import jinja2.loaders
 import jinja2.meta
 
-from functools import reduce
-
-from . import __version__
-from . import filters
-from . import parsers
+from . import __version__, filters, parsers
 from .customize import CustomizationModule
 from .defaults import CONTEXT_FORMATS
 from .render import Jinja2TemplateRenderer
@@ -87,7 +85,7 @@ def render_command(argv):
     # Customization
     if args.customize is not None:
         customize = CustomizationModule(
-            imp.load_source('customize-module', args.customize)
+            SourceFileLoader('customize-module', args.customize).load_module()
         )
     else:
         customize = CustomizationModule(None)

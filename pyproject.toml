@@ -1,0 +1,119 @@
+# package ###########################################################
+[build-system]
+requires = ["poetry-core>=1.2.0"]
+build-backend = "poetry.core.masonry.api"
+
+# pytest ############################################################
+[tool.pytest.ini_options]
+pythonpath = [
+  "./src",
+]
+
+# ruff ##############################################################
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+select = ["C4", "C90", "E", "F", "PL", "PT", "Q", "W"]
+ignore = [
+    "E731",  # Lambdas are our friends.
+    "Q000",  # We don't mind double quotes. For now...
+    "TRY003",
+]
+exclude = [
+    ".vscode",  # needed ???
+    "#*.py",  # Convention. Unversioned files we don't want to lint or delete.
+]
+
+[tool.ruff.per-file-ignores]
+    #"__init__.py" = ["F401"]
+    #"*/settings/*.py" = ["E266", "F401", "F403" , "F405"]
+    #"**/tests/**/*.py" = ["PLR0913"]
+
+[tool.ruff.mccabe]
+max-complexity = 15
+
+# Legend:
+#     A -> flake8-builtins
+#     B* -> flake8-bugbear
+#     C4 -> flake8-comprehensions
+#     C90 -> mccabe
+#     DJ -> flake8-django
+#     E -> pycodestyle error
+#     F -> pyflakes
+#     I -> isort
+#     PT* -> flake8-pytest-style
+#     PTH* -> flake8-pathlib
+#     Q -> flake8-quotes
+#     SIM* -> flake8-simplify
+#     TRY* -> tryceratops
+#     W -> pycodestyle warning
+#     E241 -> Multiple spaces after ','.
+#     E731 -> Do not assign a lambda expression, use a def.
+#     F401 -> Module imported but unused.
+#     F403 -> 'from module import *' used; unable to detect undefined names.
+#     F405 -> Name may be undefined, or defined from star imports: module.
+#     PLR0913 -> Too many arguments to function call.
+#     TRY003 -> Avoid specifying long messages outside the exception class.
+#     Q000 -> Single quotes found but double quotes preferred.
+#
+#     * -> Considered to be enabled in the future.
+
+# prospector - mirror in ruff
+#strictness: medium
+#test-warnings: true
+
+#ignore-paths:
+    #- misc
+    #- docs
+#ignore-patterns:
+    #- pyenv*
+
+#pylint:
+    #disable:
+        #- cyclic-import # doesn't seem to work properly
+
+#vulture:
+    # turn on locally to spot unused code
+    #run: false
+
+# poetry ############################################################
+[tool.poetry]
+name = "jj2cli"
+version = "0.6.0"
+description = "Juiced Jinja2 command-line tool"
+license = "BSD-2-Clause"
+authors = [
+    "Manolis Stamatogiannakis <mstamat@gmail.com>",
+]
+readme = "README.md"
+homepage = "https://github.com/m000/j2cli"
+repository = "https://github.com/m000/j2cli"
+keywords = ['Jinja2', 'templating', 'command-line', 'CLI']
+classifiers=[
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+]
+
+[tool.poetry.scripts]
+j2 = "jj2cli:render"  # temporarily keep the old entry point
+jj2 = "jj2cli:render"
+jj2dep = "jj2cli:dependencies"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+jinja2 = "^3.1"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.0"
+tox = "^4.0"
+
+[tool.poetry.group.yaml]
+optional = true
+
+[tool.poetry.group.yaml.dependencies]
+pyyaml = "^6.0"

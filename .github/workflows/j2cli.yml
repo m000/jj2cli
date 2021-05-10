@@ -1,0 +1,21 @@
+name: m000/j2cli
+on:
+  push:
+    branches:
+    - "**/*"
+  pull_request:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      TOXENV: py3.10-pyyaml6
+    steps:
+    - uses: actions/checkout@v4.1.0
+    - uses: actions/setup-python@v4.7.0
+      with:
+        python-version: "3.10"
+    - run: pip install tox
+    - run: tox

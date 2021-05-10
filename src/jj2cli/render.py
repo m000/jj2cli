@@ -1,14 +1,16 @@
+import inspect
 import io
-import os
 import logging
+import os
+from importlib.machinery import SourceFileLoader
 
 import jinja2
 import jinja2.loaders
-
-import imp, inspect
+import jinja2.meta
 
 from . import filters
 from .defaults import JINJA2_ENABLED_EXTENSIONS
+
 
 class FilePathLoader(jinja2.BaseLoader):
     """ Custom Jinja2 template loader which just loads a single template file """
@@ -70,7 +72,7 @@ class Jinja2TemplateRenderer(object):
         self.register_tests(self._import_functions(filename))
 
     def _import_functions(self, filename):
-        m = imp.load_source('imported-funcs', filename)
+        m = SourceFileLoader('imported-funcs', filename).load_module() 
         return dict((name, func) for name, func in inspect.getmembers(m) if inspect.isfunction(func))
 
     def render(self, template_path, context):

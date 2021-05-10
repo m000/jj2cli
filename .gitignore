@@ -1,13 +1,21 @@
-# ===[ APP ]=== #
-
-# ===[ PYTHON PACKAGE ]=== #
+# Python Packaging
+*.egg/
+*.egg-info/
+pyenv/
 /build/
 /dist/
 /MANIFEST
-/*.egg/
-/*.egg-info/
 
-# ===[ OTHER ]=== #
+# Python Caches
+__pycache__/
+*.py[cod]
+*.pot
+*.mo
+
+# Python Utils
+.coverage
+/htmlcov/
+/.tox/
 
 # IDE Projects
 .idea
@@ -24,21 +32,14 @@
 *.DS_Store
 Thumbs.db
 
-# Utils
-/.tox/
-.sass-cache/
-.coverage
-
-# Generated
-__pycache__
-*.py[cod]
-*.pot
-*.mo
-
 # Runtime
-/*.log
-/*.pid
+*.log
+*.pid
 
-# ===[ EXCLUDES ]=== #
+# Locals
+local/
+*.local
+
+# Forced Exclusions
 !.gitkeep
 !.htaccess

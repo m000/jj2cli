@@ -1,0 +1,81 @@
+    def rest_filters__env(self):
+        pass
+        #with mktemp('user_login: kolypto') as yml_file:
+            #with mktemp('{{ user_login }}:{{ "USER_PASS"|env }}') as template:
+                # Test: template with an env variable
+                #self._testme(['--format=yaml', template, yml_file], 'kolypto:qwerty123', env=dict(USER_PASS='qwerty123'))
+
+                # environment cleaned up
+                #assert 'USER_PASS' not in os.environ
+
+                # Test: KeyError
+                #with self.assertRaises(KeyError):
+                    #self._testme(['--format=yaml', template, yml_file], 'kolypto:qwerty123', env=dict())
+
+            # Test: default
+            #with mktemp('{{ user_login }}:{{ "USER_PASS"|env("-none-") }}') as template:
+                #self._testme(['--format=yaml', template, yml_file], 'kolypto:-none-', env=dict())
+
+            # Test: using as a function
+            #with mktemp('{{ user_login }}:{{ env("USER_PASS") }}') as template:
+                #self._testme(['--format=yaml', template, yml_file], 'kolypto:qwerty123', env=dict(USER_PASS='qwerty123'))
+
+                #with self.assertRaises(KeyError):
+                    # Variable not set
+                    #self._testme(['--format=yaml', template, yml_file], '', env=dict())
+
+            # Test: using as a function, with a default
+            #with mktemp('{{ user_login }}:{{ env("USER_PASS", "-none-") }}') as template:
+                #self._testme(['--format=yaml', template, yml_file], 'kolypto:qwerty123', env=dict(USER_PASS='qwerty123'))
+                #self._testme(['--format=yaml', template, yml_file], 'kolypto:-none-', env=dict())
+
+
+    def rest_custom_filters(self):
+        pass
+        #with mktemp('{{ a|parentheses }}') as template:
+            #self._testme(['--format=env', '--filters=resources/custom_filters.py', template], '(1)', env=dict(a='1'))
+
+    #def rest_custom_tests(self):
+        #with mktemp('{% if a|int is custom_odd %}odd{% endif %}') as template:
+            #self._testme(['--format=env', '--tests=resources/custom_tests.py', template], 'odd', env=dict(a='1'))
+
+    def rest_jinja2_extensions(self):
+        """ Test that an extension is enabled """
+        #with mktemp('{% do [] %}') as template:
+            ## `do` tag is an extension
+            #self._testme([template], '')
+
+
+    def rest_customize(self):
+        """  Test --customize """
+        # Test: j2_environment_params()
+        # Custom tag start/end
+        #with mktemp('<% if 1 %>1<% else %>2<% endif %>') as template:
+            #self._testme(['--customize=resources/customize.py', template], '1')
+
+        # Test: j2_environment()
+        # custom function: my_function
+        #with mktemp('<< my_function("hey") >>') as template:
+            #self._testme(['--customize=resources/customize.py', template], 'my function says "hey"')
+
+        # Test: alter_context()
+        # Extra variable: ADD=127
+        #with mktemp('<< ADD >>') as template:
+            #self._testme(['--customize=resources/customize.py', template], '127')
+
+        # Test: extra_filters()
+        #with mktemp('<< ADD|parentheses >>') as template:
+            #self._testme(['--customize=resources/customize.py', template], '(127)')
+
+        # Test: extra_tests()
+        #with mktemp('<% if ADD|int is custom_odd %>odd<% endif %>') as template:
+            #self._testme(['--customize=resources/customize.py', template], 'odd')
+
+        # reset
+        # otherwise it will load the same module even though its name has changed
+        #del sys.modules['customize-module']
+
+        # Test: no hooks in a file
+        # Got to restore to the original configuration and use {% %} again
+        #with mktemp('{% if 1 %}1{% endif %}') as template:
+            #self._testme(['--customize=render-test.py', template], '1')

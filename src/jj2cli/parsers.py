@@ -1,3 +1,4 @@
+import configparser
 import json
 import logging
 import os
@@ -5,9 +6,7 @@ import platform
 import re
 import sys
 from pathlib import Path
-
-import six
-from six.moves import collections_abc, configparser
+from typing import Mapping
 
 from .defaults import (CONTEXT_FORMATS, CONTEXT_FORMATS_ALIASES,
                        DATASPEC_COMPONENTS_MAX, DATASPEC_SEP, yaml_load)
@@ -162,7 +161,7 @@ class InputData:
                     d[k].pop('__name__', None)
                 return d
         ini = MyConfigParser()
-        ini.readfp(self._iostr)
+        ini.read_file(self._iostr)
         return ini.as_dict()
 
     def _parse_json(self):
@@ -183,11 +182,11 @@ def dict_squash(d, u):
     :return: Updated version of d.
     :rtype: dict
     """
-    for k, v in six.iteritems(u):
+    for k, v in u.items():
         dv = d.get(k, {})
-        if not isinstance(dv, collections_abc.Mapping):
+        if not isinstance(dv, Mapping):
             d[k] = v
-        elif isinstance(v, collections_abc.Mapping):
+        elif isinstance(v, Mapping):
             d[k] = dict_squash(dv, v)
         else:
             d[k] = v

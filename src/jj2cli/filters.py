@@ -2,7 +2,7 @@
 import os
 import re
 import sys
-from jinja2 import is_undefined, contextfilter
+from jinja2 import is_undefined, pass_context
 
 if sys.version_info >= (3,0):
     from shutil import which
@@ -119,7 +119,7 @@ def align_suffix(text, delim, column=None, spaces_after_delim=1):
 align_suffix.column_previous = None
 
 
-@contextfilter
+@pass_context
 def ctxlookup(context, key):
     """ Lookup the value of a key in the template context.
     """

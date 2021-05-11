@@ -1,13 +1,13 @@
-all:
+.PHONY: all clean test test-lint test-tox test-nose
 
-SHELL := /bin/bash
+all:
+	@echo no default action
 
 # Package
-.PHONY: clean
 clean:
 	@rm -rf build/ dist/ *.egg-info/ README.md README.rst
 	@pip install -e .  # have to reinstall because we are using self
-README.md: $(shell find j2cli/) $(wildcard misc/_doc/**)
+README.md: $(shell find src/) $(wildcard misc/_doc/**)
 	@python misc/_doc/README.py | python j2cli/__init__.py -f json -o $@ misc/_doc/README.md.j2
 
 
@@ -20,8 +20,13 @@ publish: README.md
 	@twine upload dist/*
 
 
-.PHONY: test test-tox
-test:
-	@nosetests
+test-lint:
+	prospector
+
 test-tox:
-	@tox
+	tox
+
+test-nose:
+	nosetests
+
+test: test-lint test-tox test-nose

@@ -9,13 +9,6 @@ import imp, inspect
 
 from . import filters
 
-# available log levels, adjusted with -v at command line
-LOGLEVELS = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
-
-# format to use for logging
-LOGFORMAT = '%(levelname)s: %(message)s'
-
-
 class FilePathLoader(jinja2.BaseLoader):
     """ Custom Jinja2 template loader which just loads a single template file """
 

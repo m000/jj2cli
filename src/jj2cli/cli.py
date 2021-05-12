@@ -1,20 +1,18 @@
+import argparse
+import imp
 import io
+import logging
 import os
 import sys
-import argparse
-import logging
-from functools import reduce
-
 import jinja2
-import jinja2.meta
 import jinja2.loaders
+import jinja2.meta
 
-import imp
+from functools import reduce
 
 from . import __version__
 from . import filters
-from .context import FORMATS
-from .context import parse_data_spec, read_context_data, dict_update_deep
+from . import parsers
 from .customize import CustomizationModule
 from .render import Jinja2TemplateRenderer
 
@@ -33,7 +31,6 @@ def render_command(argv):
     :rtype: basestring
     """
     version_info = (__version__, jinja2.__version__)
-    formats_names = list(FORMATS.keys())
     parser = argparse.ArgumentParser(
         description='Renders Jinja2 templates from the command line.',
         epilog='',
@@ -50,7 +47,7 @@ def render_command(argv):
             help='Increase verbosity.')
     ### input options ###############################################
     p_input.add_argument('template', help='Template file to process.')
-    p_input.add_argument('data', nargs='+', default=[],
+    p_input.add_argument('data', nargs='+', default=[], type=parsers.InputDataType(),
             help='Input data specification. '
             'Multiple sources in different formats can be specified. '
             'The different sources will be squashed into a singled dict. '
@@ -58,12 +55,12 @@ def render_command(argv):
             'Parts of the specification may be left empty. '
             'See examples at the end of the help.')
     p_input.add_argument('-U', '--undefined', default='strict',
-            dest='undefined', choices=Jinja2TemplateRenderer.UNDEFINED.keys(),
+            dest='undefined', choices=Jinja2TemplateRenderer.UNDEFINED,
             help='Set the Jinja2 beahaviour for undefined variables.)')
     p_input.add_argument('-I', '--ignore-missing', action='store_true',
             help='Ignore any missing data files.')
     p_input.add_argument('-f', '--fallback-format',
-            default='ini', choices=formats_names,
+            default='ini', choices=parsers.FORMATS,
             help='Specify fallback data format. '
             'Used for data with no specified format and no appropriate extension.')
     ### output options ##############################################
@@ -86,9 +83,6 @@ def render_command(argv):
     logging.basicConfig(format=LOGFORMAT, level=LOGLEVELS[min(args.verbose, len(LOGLEVELS)-1)])
     logging.debug("PARSED_ARGS render_command: %s", args)
 
-    # Parse data specifications
-    dspecs = [parse_data_spec(d, fallback_format=args.fallback_format) for d in args.data]
-
     # Customization
     if args.customize is not None:
         customize = CustomizationModule(
@@ -97,11 +91,11 @@ def render_command(argv):
     else:
         customize = CustomizationModule(None)
 
-    # Read data based on specs
-    data = [read_context_data(*dspec, args.ignore_missing) for dspec in dspecs]
+    # Read data based on specs.
+    data = [d.parse(ignore_missing=args.ignore_missing, fallback_format=args.fallback_format) for d in args.data]
 
     # Squash data into a single context.
-    context = reduce(dict_update_deep, data, {})
+    context = reduce(parsers.dict_squash, data, {})
 
     # Apply final customizations.
     context = customize.alter_context(context)

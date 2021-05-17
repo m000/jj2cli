@@ -1,3 +1,22 @@
+## 0.5.0 (2021-05-31)
+* Project spun-off, renamed to jj2cli. Version bumped-up to 0.5.0 to
+  show parity plus a few extra features. Future changes to version will
+  not have any significance regarding to the parent j2cli project.
+* New: Support for multiple input files, squashed in a single context prior
+  to rendering.
+* New: Support for using *data-specs* to describe input files.
+  - Allows mixing/matching different input formats.
+  - Allows attaching input format in a specific location of the context.
+  - Support for list-formatted inputs via aforementioned attaching.
+* New: `--ignore-missing`/`-I` flag, for ignoring  non-existing input files.
+* Change: `--undefined`/`-U` now allows you to set the behaviour of Jinja2
+  for undefined variables.
+* Change: `--fallback-format`/`-f` now sets the *fallback* format, rather than
+  forcing the use of a specific format. Forcing a specific format can be
+  achieved via *data-specs*.
+* Change: Currently only Python 3.8 and 3.9 are supported. The goal is to
+  eventually support Python >=3.6 and Python 2.7.
+
 ## 0.3.12 (2019-08-18)
 * Fix: use `env` format from stdin
 

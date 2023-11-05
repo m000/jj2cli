@@ -8,6 +8,7 @@ import jinja2.loaders
 import imp, inspect
 
 from . import filters
+from .defaults import JINJA2_ENABLED_EXTENSIONS
 
 class FilePathLoader(jinja2.BaseLoader):
     """ Custom Jinja2 template loader which just loads a single template file """
@@ -35,12 +36,6 @@ class FilePathLoader(jinja2.BaseLoader):
 class Jinja2TemplateRenderer(object):
     """ Template renderer """
 
-    ENABLED_EXTENSIONS=(
-        'jinja2.ext.i18n',
-        'jinja2.ext.do',
-        'jinja2.ext.loopcontrols',
-    )
-
     UNDEFINED = {
         'strict': jinja2.StrictUndefined, # raises errors for undefined variables
         'normal': jinja2.Undefined,       # can be printed/iterated - error on other operations
@@ -53,7 +48,7 @@ class Jinja2TemplateRenderer(object):
         j2_env_params.setdefault('undefined', self.UNDEFINED[undefined])
         j2_env_params.setdefault('trim_blocks', not no_compact)
         j2_env_params.setdefault('lstrip_blocks', not no_compact)
-        j2_env_params.setdefault('extensions', self.ENABLED_EXTENSIONS)
+        j2_env_params.setdefault('extensions', JINJA2_ENABLED_EXTENSIONS)
         j2_env_params.setdefault('loader', FilePathLoader(cwd))
 
         # Environment

@@ -1,34 +1,17 @@
-import itertools
 import json
 import logging
 import os
 import platform
 import re
-import six
 import sys
-
-from os import linesep
 from pathlib import Path
-from six.moves import collections_abc, configparser, filter, zip
 
-try:
-    import yaml
-    try:
-        yaml_loader = yaml.FullLoader
-    except AttributeError:
-        yaml_loader = yaml.SafeLoader
-except ImportError:
-    yaml_loader = None
+import six
+from six.moves import collections_abc, configparser
 
-# XXX: Chaining used instead of unpacking (*) for backwards compatibility.
-FORMATS = ['env', 'ENV', 'ini', 'json', 'yaml']
-if yaml_loader is None:
-    FORMATS.remove('yaml')
-FORMATS_ALIASES = dict(itertools.chain(zip(FORMATS, FORMATS),
-    filter(lambda t: t[1] in FORMATS, [('yml', 'yaml')])))
+from .defaults import (CONTEXT_FORMATS, CONTEXT_FORMATS_ALIASES,
+                       DATASPEC_COMPONENTS_MAX, DATASPEC_SEP, yaml_load)
 
-DATASPEC_SEP = ':'
-DATASPEC_COMPONENTS_MAX = 3
 
 class InputDataType:
     """Factory for creating jj2cli input data types.
@@ -76,12 +59,12 @@ class InputDataType:
         # post-process parsed components
         path, fmt, ctx_dst = dspec
         path = Path(path) if path not in ['', '-'] else None
-        if fmt in FORMATS_ALIASES:
+        if fmt in CONTEXT_FORMATS_ALIASES:
             # forced format is case-sensitive
-            fmt = FORMATS_ALIASES[fmt]
-        elif fmt in ['', '?', None] and path is not None and path.suffix[1:] in FORMATS_ALIASES:
+            fmt = CONTEXT_FORMATS_ALIASES[fmt]
+        elif fmt in ['', '?', None] and path is not None and path.suffix[1:] in CONTEXT_FORMATS_ALIASES:
             # file extensions are case-insensitive
-            fmt = FORMATS_ALIASES[path.suffix[1:].lower()]
+            fmt = CONTEXT_FORMATS_ALIASES[path.suffix[1:].lower()]
         else:
             fmt = None
         ctx_dst = None if ctx_dst in ['', None] else None
@@ -131,7 +114,7 @@ class InputData:
 
     @fmt.setter
     def set_fmt(self, v):
-        if v in FORMATS:
+        if v in CONTEXT_FORMATS:
             self._fmt = v
         else:
             raise ValueError("Invalid format %s." % v)
@@ -186,9 +169,9 @@ class InputData:
         return json.load(self._iostr)
 
     def _parse_yaml(self):
-        if yaml_loader is None:
+        if yaml_load is None:
             raise RuntimeError("YAML data parser invoked, but no YAML support is present.")
-        return yaml.load(self._iostr, Loader=yaml_loader)
+        return yaml_load(self._iostr)
 
 
 def dict_squash(d, u):

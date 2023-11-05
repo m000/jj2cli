@@ -14,6 +14,7 @@ from . import __version__
 from . import filters
 from . import parsers
 from .customize import CustomizationModule
+from .defaults import CONTEXT_FORMATS
 from .render import Jinja2TemplateRenderer
 
 # available log levels, adjusted with -v at command line
@@ -60,7 +61,7 @@ def render_command(argv):
     p_input.add_argument('-I', '--ignore-missing', action='store_true',
             help='Ignore any missing data files.')
     p_input.add_argument('-f', '--fallback-format',
-            default='ini', choices=parsers.FORMATS,
+            default='ini', choices=CONTEXT_FORMATS,
             help='Specify fallback data format. '
             'Used for data with no specified format and no appropriate extension.')
     ### output options ##############################################

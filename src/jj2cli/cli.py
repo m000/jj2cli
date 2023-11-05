@@ -127,7 +127,7 @@ def render_command(argv):
     return result
 
 
-def main():
+def render():
     """ CLI entry point for rendering templates. """
     try:
         output = render_command(sys.argv)
@@ -135,3 +135,31 @@ def main():
         return 1
     outstream = getattr(sys.stdout, 'buffer', sys.stdout)
     outstream.write(output)
+
+
+def dependencies():
+    """ CLI entry point for analyzing template dependencies. """
+    #version_info = (__version__, jinja2.__version__)
+    parser = argparse.ArgumentParser(
+        description='Analyze Jinja2 templates for dependencies.',
+        epilog='',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    p_input = parser.add_argument_group('input options')
+    p_output = parser.add_argument_group('output options')
+    p_output_mode = p_output.add_mutually_exclusive_group()
+    ### input options ###############################################
+    p_input.add_argument('templates', metavar='TEMPLATE', nargs='+',
+            type=argparse.FileType('r', encoding='utf-8'))
+    ### output options ##############################################
+    p_output.add_argument('-f', '--format',
+            default='make', choices=sorted(DEPENDENCIES_OUTPUT_FORMATS),
+            help='Specify output format for dependencies.')
+    p_output_mode.add_argument('-o', metavar='outfile', dest='output_file',
+            help="Output to a file instead of stdout.")
+    p_output_mode.add_argument('--per-file', action='store_true', dest='per_file',
+            help='Produce one output file per input file.')
+
+    args = parser.parse_args()
+    print(args)
+    raise NotImplementedError("jj2dep has not yet been implemented.")

@@ -27,18 +27,18 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Env-Inspect1 (py${{ matrix.python-version }})
-      run: (env | sort; echo "----"; which tox; echo "----"; which poetry) || true
-    - name: Find1 (py${{ matrix.python-version }})
+      run: (echo "\n--- env"; env | sort; echo "\n--- tox"; which tox; echo "\n--- poetry"; which poetry) || true
+    - name: File-Inspect1 (py${{ matrix.python-version }})
       run: find .
+
     - name: Load cached Poetry installation
       id: cached-poetry
       uses: actions/cache@v3
       with:
         path: .venv  # the path depends on the OS
         key: poetry-3  # increment to reset cache
-    - name: Find2 (py${{ matrix.python-version }})
-      run: find .
     - name: Install Poetry
       if: steps.cached-poetry.outputs.cache-hit != 'true'
       uses: snok/install-poetry@v1
@@ -46,30 +46,34 @@ jobs:
         version: 1.7.0
         virtualenvs-create: true
         virtualenvs-in-project: true  # create .venv in test directory
-    - name: Tox env2 (py${{ matrix.python-version }})
-      run: env
     - name: Install Poetry development dependencies  # main dependencies are handled by tox
       if: steps.cached-poetry.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root --only=dev
+
+    - name: Env-Inspect2 (py${{ matrix.python-version }})
+      run: (echo "\n--- env"; env | sort; echo "\n--- tox"; which tox; echo "\n--- poetry"; which poetry) || true
+    - name: File-Inspect2 (py${{ matrix.python-version }})
+      run: find .
+
     - name: Activate Poetry development dependencies  # main dependencies are handled by tox
       if: steps.cached-poetry.outputs.cache-hit == 'true'
       run: source .venv/bin/activate
-    - name: Find3 (py${{ matrix.python-version }})
+
+    - name: Env-Inspect3 (py${{ matrix.python-version }})
+      run: (echo "\n--- env"; env | sort; echo "\n--- tox"; which tox; echo "\n--- poetry"; which poetry) || true
+    - name: File-Inspect3 (py${{ matrix.python-version }})
       run: find .
-    - name: Tox env3 (py${{ matrix.python-version }})
-      run: env
+
     - name: Load cached tox environment
       id: cached-toxenv
       uses: actions/cache@v3
       with:
         path: .tox/py${{ matrix.python-version }}-**
         key: toxenv-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock', 'tox.ini') }}
-    - name: Tox id1 (py${{ matrix.python-version }})
-      run: which tox || true
-    - name: Tox id2 (py${{ matrix.python-version }})
-      run: poetry run which tox || true
+
     - name: Tox tests (py${{ matrix.python-version }})
       run: poetry run tox
+
     - name: Send coverage reports to Codecov
       uses: codecov/codecov-action@v3
       with:
@@ -79,7 +83,8 @@ jobs:
         #name: codecov-umbrella # optional
         fail_ci_if_error: false
         verbose: true
-    - name: WTF1 (py${{ matrix.python-version }})
-      run: ls -al manifest.txt || true
-    - name: WTF2 (py${{ matrix.python-version }})
-      run: cat manifest.txt || true
+
+    - name: Env-Inspect4 (py${{ matrix.python-version }})
+      run: (echo "\n--- env"; env | sort; echo "\n--- tox"; which tox; echo "\n--- poetry"; which poetry) || true
+    - name: File-Inspect4 (py${{ matrix.python-version }})
+      run: find .

@@ -49,6 +49,10 @@ jobs:
       with:
         path: .tox/py${{ matrix.python-version }}-**
         key: toxenv-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock', 'tox.ini') }}
+    - name: Tox id1 (py${{ matrix.python-version }})
+      run: which tox || true
+    - name: Tox id2 (py${{ matrix.python-version }})
+      run: poetry run which tox || true
     - name: Tox tests (py${{ matrix.python-version }})
       run: poetry run tox
     - name: Send coverage reports to Codecov

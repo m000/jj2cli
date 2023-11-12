@@ -1,3 +1,6 @@
+# Related documentation:
+#   https://jacobian.org/til/github-actions-poetry/
+#   https://github.com/snok/install-poetry
 name: m000/j2cli
 on:
   push:
@@ -9,13 +12,51 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test:
-    runs-on: ubuntu-latest
-    env:
-      TOXENV: py3.10-pyyaml6
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-latest" ]
+        python-version: [ "3.10", "3.11" ]
+    runs-on: ${{ matrix.os }}
+#   env:
+#     TOXENV: py${{ matrix.python-version }}-pyyaml6
     steps:
-    - uses: actions/checkout@v4.1.0
-    - uses: actions/setup-python@v4.7.0
+    - name: Repository checkout
+      uses: actions/checkout@v4
+    - name: Python ${{ matrix.python-version }} setup
+      uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
-    - run: pip install tox
-    - run: tox
+        python-version: ${{ matrix.python-version }}
+    - name: Load cached Poetry installation
+      id: cached-poetry
+      uses: actions/cache@v3
+      with:
+        path: ~/.local  # the path depends on the OS
+        key: poetry-0  # increment to reset cache
+    - name: Install Poetry
+      if: steps.cached-poetry.outputs.cache-hit != 'true'
+      uses: snok/install-poetry@v1
+      with:
+        version: 1.7.0
+        virtualenvs-create: true
+        virtualenvs-in-project: true  # create .venv in test directory
+    - name: Install Poetry development dependencies  # main dependencies are handled by tox
+      if: steps.cached-poetry.outputs.cache-hit != 'true'
+      run: poetry install --no-interaction --no-root --only=dev
+    - name: Load cached tox environment
+      id: cached-toxenv
+      uses: actions/cache@v3
+      with:
+        path: .tox/py${{ matrix.python-version }}-**
+        key: toxenv-py${{ matrix.python-version }}-${{ hashFiles('tox.ini') }}
+    - name: Tox tests (py${{ matrix.python-version }})
+      run: poetry run tox
+    - name: Send coverage reports to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        #files: ./coverage1.xml,./coverage2.xml # optional
+        #flags: unittests # optional
+        #name: codecov-umbrella # optional
+        fail_ci_if_error: false
+        verbose: true

@@ -1,6 +1,6 @@
 # package ###########################################################
 [build-system]
-requires = ["poetry-core>=1.2.0"]
+requires = ["poetry-core>=1.2.0", "pytest>=7.4", "tox>=4.11"]
 build-backend = "poetry.core.masonry.api"
 
 # pytest ############################################################

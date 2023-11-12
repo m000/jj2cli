@@ -27,8 +27,8 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Tox env1 (py${{ matrix.python-version }})
-      run: env
+    - name: Env-Inspect1 (py${{ matrix.python-version }})
+      run: (env | sort; echo "----"; which tox; echo "----"; which poetry) || true
     - name: Find1 (py${{ matrix.python-version }})
       run: find .
     - name: Load cached Poetry installation

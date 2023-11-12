@@ -35,8 +35,8 @@ jobs:
       id: cached-poetry
       uses: actions/cache@v3
       with:
-        path: ~/.local  # the path depends on the OS
-        key: poetry-2  # increment to reset cache
+        path: .venv  # the path depends on the OS
+        key: poetry-3  # increment to reset cache
     - name: Find2 (py${{ matrix.python-version }})
       run: find .
     - name: Install Poetry

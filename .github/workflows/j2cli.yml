@@ -47,6 +47,9 @@ jobs:
     - name: Install Poetry development dependencies  # main dependencies are handled by tox
       if: steps.cached-poetry.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root --only=dev
+    - name: Activate Poetry development dependencies  # main dependencies are handled by tox
+      if: steps.cached-poetry.outputs.cache-hit == 'true'
+      run: source $VENV
     - name: Tox env3 (py${{ matrix.python-version }})
       run: env
     - name: Load cached tox environment

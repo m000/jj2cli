@@ -63,7 +63,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: .tox/py${{ matrix.python-version }}-**
-        key: toxenv-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock', 'tox.ini') }}
+        key: toxenv-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock', 'tox.ini', ${{ GITHUB_WORKFLOW_FILE }}) }}
     - name: Tox id1 (py${{ matrix.python-version }})
       run: which tox || true
     - name: Tox id2 (py${{ matrix.python-version }})

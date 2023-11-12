@@ -36,7 +36,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: ~/.local  # the path depends on the OS
-        key: poetry-1  # increment to reset cache
+        key: poetry-2  # increment to reset cache
     - name: Find2 (py${{ matrix.python-version }})
       run: find .
     - name: Install Poetry
@@ -79,3 +79,7 @@ jobs:
         #name: codecov-umbrella # optional
         fail_ci_if_error: false
         verbose: true
+    - name: WTF1 (py${{ matrix.python-version }})
+      run: ls -al manifest.txt || true
+    - name: WTF2 (py${{ matrix.python-version }})
+      run: cat manifest.txt || true

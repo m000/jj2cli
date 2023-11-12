@@ -54,6 +54,8 @@ jobs:
     - name: Activate Poetry development dependencies  # main dependencies are handled by tox
       if: steps.cached-poetry.outputs.cache-hit == 'true'
       run: source .venv/bin/activate
+    - name: Find3 (py${{ matrix.python-version }})
+      run: find .
     - name: Tox env3 (py${{ matrix.python-version }})
       run: env
     - name: Load cached tox environment

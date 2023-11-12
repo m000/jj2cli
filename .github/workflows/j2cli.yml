@@ -48,7 +48,7 @@ jobs:
       uses: actions/cache@v3
       with:
         path: .tox/py${{ matrix.python-version }}-**
-        key: toxenv-py${{ matrix.python-version }}-${{ hashFiles('tox.ini') }}
+        key: toxenv-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock', 'tox.ini') }}
     - name: Tox tests (py${{ matrix.python-version }})
       run: poetry run tox
     - name: Send coverage reports to Codecov

@@ -27,6 +27,8 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Tox env1 (py${{ matrix.python-version }})
+      run: env
     - name: Load cached Poetry installation
       id: cached-poetry
       uses: actions/cache@v3
@@ -40,9 +42,13 @@ jobs:
         version: 1.7.0
         virtualenvs-create: true
         virtualenvs-in-project: true  # create .venv in test directory
+    - name: Tox env2 (py${{ matrix.python-version }})
+      run: env
     - name: Install Poetry development dependencies  # main dependencies are handled by tox
       if: steps.cached-poetry.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root --only=dev
+    - name: Tox env3 (py${{ matrix.python-version }})
+      run: env
     - name: Load cached tox environment
       id: cached-toxenv
       uses: actions/cache@v3

@@ -33,12 +33,6 @@ jobs:
     - name: File-Inspect1 (py${{ matrix.python-version }})
       run: find .
 
-    - name: Load cached Poetry installation
-      id: cached-poetry
-      uses: actions/cache@v3
-      with:
-        path: .venv  # the path depends on the OS
-        key: poetry-3  # increment to reset cache
     - name: Install Poetry
       if: steps.cached-poetry.outputs.cache-hit != 'true'
       uses: snok/install-poetry@v1
